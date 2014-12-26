@@ -1,0 +1,6 @@
+AUTOMAKE_OPTIONS=foreign
+
+bin_PROGRAMS=gen_distance_table
+
+gen_distance_table_SOURCES=gen_distance_table.cpp
+
