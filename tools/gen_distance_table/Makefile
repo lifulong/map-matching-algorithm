@@ -94,7 +94,8 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_gen_distance_table_OBJECTS = gen_distance_table.$(OBJEXT)
 gen_distance_table_OBJECTS = $(am_gen_distance_table_OBJECTS)
-gen_distance_table_LDADD = $(LDADD)
+gen_distance_table_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(gen_distance_table_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
 am__v_P_0 = false
@@ -259,6 +260,10 @@ top_builddir = .
 top_srcdir = .
 AUTOMAKE_OPTIONS = foreign
 gen_distance_table_SOURCES = gen_distance_table.cpp
+gen_distance_table_LDADD = 
+gen_distance_table_LDFLAGS = 
+gen_distance_table_DEPENDENCIES = 
+AM_CXXFLAGS = -Wall -g -O0
 all: all-am
 
 .SUFFIXES:
@@ -342,7 +347,7 @@ clean-binPROGRAMS:
 
 gen_distance_table$(EXEEXT): $(gen_distance_table_OBJECTS) $(gen_distance_table_DEPENDENCIES) $(EXTRA_gen_distance_table_DEPENDENCIES) 
 	@rm -f gen_distance_table$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(gen_distance_table_OBJECTS) $(gen_distance_table_LDADD) $(LIBS)
+	$(AM_V_CXXLD)$(gen_distance_table_LINK) $(gen_distance_table_OBJECTS) $(gen_distance_table_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

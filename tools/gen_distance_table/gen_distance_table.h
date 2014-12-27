@@ -40,6 +40,11 @@ class GenDistanceTable
 				}
 			}
 
+			fprintf(fp, "lat\t");
+			for(i = 0; i < gaps_array_len; i++)
+				fprintf(fp, "%0.4f\t", gaps_array[i]);
+			fprintf(fp, "\n");
+
 			while(current_lat <= end_lat)
 			{
 				fprintf(fp, "%0.4f\t", current_lat);
@@ -81,6 +86,11 @@ class GenDistanceTable
 					return;
 				}
 			}
+
+			fprintf(fp, "lat\t");
+			for(i = 0; i < gaps_array_len; i++)
+				fprintf(fp, "%0.4f\t", gaps_array[i]);
+			fprintf(fp, "\n");
 
 			fprintf(fp, "%0.4f\t", current_lat);
 			for(i = 0; i < gaps_array_len; i++)
