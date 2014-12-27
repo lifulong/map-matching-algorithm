@@ -14,6 +14,8 @@ segs_file=$2
 
 function gen_segs()
 {
+	echo -e "[INFO]\tStart gen_segs... ..."
+
 	local edge_file=$1
 	local seg_file=$2
 	let seg_id=0
@@ -22,23 +24,42 @@ function gen_segs()
 
 	while read line
 	do
+		let label=$seg_id%4
+
+		case $label in
+			0) echo -n -e "\b\b\b---";;
+			1) echo -n -e "\b\b\b\\\\\\";;
+			2) echo -n -e "\b\b\b|||";;
+			3) echo -n -e "\b\b\b///";;
+		esac
+
 		read edge_id rest<<-EOF
 			$line
 		EOF
 
+		last_lat=""
+		last_lng=""
+
 		while [ "$rest" != "" ];
 		do
+			last_lat=$lat
+			last_lng=$lng
 			read lat lng rest<<-EOF
 				$rest
 			EOF
 			let seg_id=$seg_id+1
-			echo -e "$seg_id\t$lat\t$lng\t$edge_id" | tee -a $seg_file
+			if [ "$last_lat" != "" -a "$last_lng" != "" ]; then
+#				echo -e "$seg_id\t$last_lat\t$last_lng\t$lat\t$lng\t$edge_id" | tee -a $seg_file
+				echo -e "$seg_id\t$last_lat\t$last_lng\t$lat\t$lng\t$edge_id" >> $seg_file
+			fi
 		done
 
 	done<&3
 
 	exec 3<&-
 	exec 3>&-
+
+	echo -e "[INFO]\tFinish gen_segs... ..."
 }
 
 gen_segs $edges_file $segs_file
