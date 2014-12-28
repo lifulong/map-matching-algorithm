@@ -32,6 +32,8 @@ void GenMapGrid::genGrid(string segs_file)
 	if(segs_file == "")
 		return;
 
+	debug_msg("Start genGrid ... ...\n");
+
 	seg_info.clear();
 
 	fp = fopen(segs_file.c_str(), "r");
@@ -50,11 +52,44 @@ void GenMapGrid::genGrid(string segs_file)
 		this->updateGrids(seg);
 	}
 	fclose(fp);
+	debug_msg("genGrid Finish.\n");
 }
 
 void GenMapGrid::dumpGrid(string dump_file="")
 {
-	printf("dumpGrid.\n");
+	int i, j;
+	FILE *fp;
+
+	if("" == dump_file)
+		fp = stdout;
+	else
+	{
+		fp = fopen(dump_file.c_str(), "a+");
+	}
+
+	debug_msg("Start dumpGrid ... ...\n");
+
+	for(i = 0; i < lng_num; i++)
+	{
+		for(j = 0; j < lat_num; j++)
+		{
+			//format:i j start_lng start_lat end_lng end_lat seg_id1 ... seg_idn
+			fprintf(fp, "%d\t%d\t%f\t%f\t%f\t%f", i, j, grid[i][j].start_lng, grid[i][j].start_lat,
+					grid[i][j].end_lng, grid[i][j].end_lat);
+			for(vector<seg>::iterator iter = grid[i][j].node_segs.begin(); iter != grid[i][j].node_segs.end(); iter++)
+			{
+				fprintf(fp, "\t%d", iter->seg_id);
+			}
+			fprintf(fp, "\n");
+		}
+	}
+
+	if("" != dump_file)
+	{
+		fclose(fp);
+	}
+
+	debug_msg("dumpGrid Finish.\n");
 }
 
 
@@ -114,12 +149,12 @@ void GenMapGrid::_preprocess(string type)
 		end_lat = this->_round(end_lat, lat_gap, 0);
 		start_lng = this->_round(start_lng, lng_gap, 1);
 		end_lng = this->_round(end_lng, lng_gap, 0);
-		debug_msg("%f\t%f\t%f\t%f\n", start_lat, end_lat, start_lng, end_lng);
 	}
 
-	lat_num = abs(end_lat - start_lat) / lat_gap;
-	lng_num = abs(end_lng - start_lng) / lng_gap;
-	debug_msg("%d\t%d\n", lat_num, lng_num);
+	debug_msg("%f\t%f\t%f\t%f\t%f\t%f\n", start_lat, end_lat, start_lng, end_lng, lat_gap, lng_gap);
+	lat_num = fabs(end_lat - start_lat) / lat_gap + 1;
+	lng_num = fabs(end_lng - start_lng) / lng_gap + 1;
+	debug_msg("lat_num:%d\tlng_num:%d\n", lat_num, lng_num);
 }
 
 void GenMapGrid::_initGrid()
@@ -137,8 +172,8 @@ void GenMapGrid::_initGrid()
 	 * first dimension is horizontal, lng
 	 * second dimension is vertical, lat
 	 */
-	for(i = 0; i < lat_num; i++)
-		for(j = 0; j < lng_num; j++) {
+	for(i = 0; i < lng_num; i++)
+		for(j = 0; j < lat_num; j++) {
 			grid[i][j].start_lng = this->start_lng + i*this->lng_gap;
 			grid[i][j].end_lng = grid[i][j].start_lng + this->lng_gap;
 			grid[i][j].start_lat = this->start_lat + j*this->lat_gap;
@@ -149,7 +184,7 @@ void GenMapGrid::_initGrid()
 
 struct grid_index GenMapGrid::getGridIndexByPoint(double lng, double lat)
 {
-	int i, j;
+	int i=0, j=0;
 	struct grid_index index;
 
 	i = (lng - this->start_lng) / this->lng_gap + 1;
@@ -161,6 +196,15 @@ struct grid_index GenMapGrid::getGridIndexByPoint(double lng, double lat)
 		j = -1;
 	}
 
+	if(i < 0 || j < 0) {
+		/*
+		cout << "getGridIndexByPoint: lng_num = " << lng_num << " lat_num = " << lat_num << endl;
+		cout << "getGridIndexByPoint: i = " << i << " j = " << j << endl;
+		cout << "getGridIndexByPoint start_lng:" << this->start_lng << " start_lat:" << this->start_lat << endl;
+		cout << "getGridIndexByPoint lng:" << lng << " lat:" << lat << endl;
+		*/
+	}
+
 	index.i = i;
 	index.j = j;
 
@@ -169,7 +213,13 @@ struct grid_index GenMapGrid::getGridIndexByPoint(double lng, double lat)
 
 void GenMapGrid::updateGrid(struct grid_index index, struct seg seg)
 {
+	if(index.i < 0 || index.i > lng_num || index.j < 0 || index.j > lat_num)
+	{
+		cout << "index valid: i = " << index.i << " j = " << index.j << endl;
+		return;
+	}
 	this->grid[index.i][index.j].node_segs.push_back(seg);
+	//printf("i:%d\tj:%d\tsize:%d\n", index.i, index.j, grid[index.i][index.j].node_segs.size());
 }
 
 void GenMapGrid::updateHorizontalGrids(double k, double start_lng, double start_lat, 
@@ -283,11 +333,11 @@ void GenMapGrid::updateVertOrientGrids(double k, double start_lng, double start_
 
 void GenMapGrid::updateGrids(struct seg seg)
 {
-	double k;
+	double k = 0;
 	double left_lat=0, left_lng=0, right_lat=0, right_lng=0;
 	double buttom_lat=0, buttom_lng=0, top_lat=0, top_lng=0;
 	// 1:horizontal		2:vertical		3:horiz_orientation	4:vertical_orientation
-	char direction = 0;
+	int direction = 0;
 
 	if(seg.start_lat == seg.end_lat) {
 
@@ -310,21 +360,6 @@ void GenMapGrid::updateGrids(struct seg seg)
 	}
 
 	if(2 == direction || 4 == direction) {
-	
-		if(seg.start_lat <= seg.end_lat) {
-
-			left_lng = seg.start_lng;
-			left_lat = seg.start_lat;
-			right_lng = seg.end_lng;
-			right_lat = seg.end_lat;
-		} else {
-
-			left_lng = seg.end_lng;
-			left_lat = seg.end_lat;
-			right_lng = seg.start_lng;
-			right_lat = seg.start_lat;
-		}
-	} else if(1 == direction || 3 == direction) {
 
 		if(seg.start_lng <= seg.end_lng) {
 
@@ -340,8 +375,22 @@ void GenMapGrid::updateGrids(struct seg seg)
 			top_lat = seg.start_lat;
 		}
 
-	}
+	} else if(1 == direction || 3 == direction) {
 
+		if(seg.start_lat <= seg.end_lat) {
+
+			left_lng = seg.start_lng;
+			left_lat = seg.start_lat;
+			right_lng = seg.end_lng;
+			right_lat = seg.end_lat;
+		} else {
+
+			left_lng = seg.end_lng;
+			left_lat = seg.end_lat;
+			right_lng = seg.start_lng;
+			right_lat = seg.start_lat;
+		}
+	}
 
 	switch(direction)
 	{

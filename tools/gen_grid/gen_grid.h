@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #include <iostream>
 #include <vector>
@@ -8,6 +9,9 @@ using namespace std;
 //accept c_str as input parameters.
 #define debug_2_console(fmt,args...)	\
 	do{									\
+		time_t t_time;					\
+		time(&t_time);					\
+		printf("%s", ctime(&t_time));	\
 		printf(fmt,##args);				\
 	}while(0)
 
@@ -31,26 +35,26 @@ using namespace std;
 #endif
 
 
-#define BJ_START_LAT	39.4
-#define BJ_END_LAT		41.6
-#define BJ_START_LNG	115.7
+#define BJ_START_LNG	115.25
+#define BJ_START_LAT	39.26
 #define BJ_END_LNG		117.4
+#define BJ_END_LAT		41.1
 
 #define LNG_GAP		0.005
 #define LAT_GAP		0.005
 
-#define START_LAT	BJ_START_LAT
-#define END_LAT		BJ_END_LAT
 #define START_LNG	BJ_START_LNG
+#define START_LAT	BJ_START_LAT
 #define END_LNG		BJ_END_LNG
+#define END_LAT		BJ_END_LAT
 
 struct seg {
 	int		seg_id;
 	int		edge_id;
-	double	start_lat;
 	double	start_lng;
-	double	end_lat;
+	double	start_lat;
 	double	end_lng;
+	double	end_lat;
 };
 
 struct grid_index {
@@ -58,8 +62,8 @@ struct grid_index {
 };
 
 struct grid_node {
-	double start_lat, end_lat;
 	double start_lng, end_lng;
+	double start_lat, end_lat;
 	vector<struct seg> node_segs;
 };
 
