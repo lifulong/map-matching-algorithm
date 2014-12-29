@@ -30,6 +30,8 @@
 *.txt
 mapdata
 
+papers
+
 tools/gen_distance_table/Makefile.in
 tools/gen_distance_table/end_lng_table.txt
 tools/gen_distance_table/lat_table.txt
