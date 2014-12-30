@@ -20,6 +20,8 @@ function gen_segs()
 	local seg_file=$2
 	let seg_id=0
 
+	[ -f $seg_file ] && { rm -f $seg_file; }
+
 	exec 3<> $edge_file
 
 	while read line
@@ -47,11 +49,14 @@ function gen_segs()
 			read lat lng rest<<-EOF
 				$rest
 			EOF
-			let seg_id=$seg_id+1
-			if [ "$last_lat" != "" -a "$last_lng" != "" ]; then
-#				echo -e "$seg_id\t$last_lat\t$last_lng\t$lat\t$lng\t$edge_id" | tee -a $seg_file
-				echo -e "$seg_id\t$last_lat\t$last_lng\t$lat\t$lng\t$edge_id" >> $seg_file
+			if [ "$last_lat" == "" -o "$last_lng" == "" ]; then
+				continue
 			fi
+			let seg_id=$seg_id+1
+#			if [ "$last_lat" != "" -a "$last_lng" != "" ]; then
+#				echo -e "$seg_id\t$last_lng\t$last_lat\t$lng\t$lat\t$edge_id" | tee -a $seg_file
+			echo -e "$seg_id\t$last_lng\t$last_lat\t$lng\t$lat\t$edge_id" >> $seg_file
+#			fi
 		done
 
 	done<&3

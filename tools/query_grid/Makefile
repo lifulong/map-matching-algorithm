@@ -180,12 +180,12 @@ AUTOMAKE = ${SHELL} /home/peter/peter-proj/map-matching-algorithm/tools/query_gr
 AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2
+CFLAGS = -g -O0
 CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -g -O2
+CXXFLAGS = -g -O0
 CYGPATH_W = echo
 DEFS = -DPACKAGE_NAME=\"query_grid\" -DPACKAGE_TARNAME=\"query_grid\" -DPACKAGE_VERSION=\"0.1\" -DPACKAGE_STRING=\"query_grid\ 0.1\" -DPACKAGE_BUGREPORT=\"msl.fulong@gmail.com\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDLIB_H=1
 DEPDIR = .deps

@@ -58,6 +58,8 @@ void QueryGrid::loadSegs(string segs_file)
 	debug_msg("[INFO]loading segs... ...\n");
 	infile.open(segs_file.c_str(), ifstream::in);
 
+	this->segs.push_back(seg);	//FIXME:First seg is padding, invalid.
+
 	while(!infile.getline(buffer, READ_BUFFER_LEN).eof())
 	{
 		seg_data = SplitBySep(buffer, "\t");
@@ -159,11 +161,14 @@ void QueryGrid::loadGridData(string grid_file)
 	memset(buffer, 0, READ_BUFFER_LEN);
 	while(fgets(buffer, READ_BUFFER_LEN, fp))
 	{
-		memset(buffer, 0, READ_BUFFER_LEN);
 		grid_data.clear();
 		EchoRunning();
 		grid_data = SplitBySep(buffer, "\t");
-		/*
+		if(grid_data.size() < 6) {
+			debug_msg("grid data size error, %d.\n", grid_data.size());
+			debug_msg("grid data size error, %s.\n", buffer);
+			continue;
+		}
 		i = atoi(grid_data[0].c_str());
 		j = atoi(grid_data[1].c_str());
 		start_lng = atof(grid_data[2].c_str());
@@ -173,23 +178,11 @@ void QueryGrid::loadGridData(string grid_file)
 		
 		if(i < 0 || i > this->lng_num) {
 			debug_msg("grid lng index error, %d.\n", i);
-			int k;
-			for(k=0; k<grid_data.size(); k++)
-			{
-				cout<<grid_data[k]<<endl;
-			}
-			return;
 			continue;
 		}
 
 		if(j < 0 || j > this->lat_num) {
 			debug_msg("grid lat index error, %d.\n", j);
-			int k;
-			for(k=0; k<grid_data.size(); k++)
-			{
-				cout<<grid_data[k]<<endl;
-			}
-			return;
 			continue;
 		}
 
@@ -208,11 +201,10 @@ void QueryGrid::loadGridData(string grid_file)
 				pos++;
 				continue;
 			}
-			//seg = this->segs[seg_id - 1];
-			//this->grid[i][j].node_segs.push_back(seg);
+			seg = this->segs[seg_id - 1];
+			this->grid[i][j].node_segs.push_back(seg);
 			pos++;
 		}
-		*/
 	}
 
 	fclose(fp);
@@ -233,22 +225,21 @@ struct grid_index QueryGrid::getGridIndexByPoint(double lng, double lat)
 
 	struct grid_index index;
 
-	i = (lng - this->start_lng) / this->lng_gap + 1;
-	j = (lat - this->start_lat) / this->lat_gap + 1;
+	i = (lng - this->start_lng) / this->lng_gap;
+	j = (lat - this->start_lat) / this->lat_gap;
 
 	if(i >= this-> lng_num || j >= this->lat_num)
 	{
+		debug_msg("getGridIndexByPoint: i = %d j = %d.\n", i, j);
 		i = -1;
 		j = -1;
 	}
 
 	if(i < 0 || j < 0) {
-		/*
-		cout << "getGridIndexByPoint: lng_num = " << lng_num << " lat_num = " << lat_num << endl;
-		cout << "getGridIndexByPoint: i = " << i << " j = " << j << endl;
-		cout << "getGridIndexByPoint start_lng:" << this->start_lng << " start_lat:" << this->start_lat << endl;
-		cout << "getGridIndexByPoint lng:" << lng << " lat:" << lat << endl;
-		*/
+		debug_msg("getGridIndexByPoint lng: %f,lat: %f.\n", lng, lat);
+		debug_msg("getGridIndexByPoint start_lng: %f,start_lat: %f.\n", this->start_lng, this->start_lat);
+		debug_msg("getGridIndexByPoint: lng_num = %d, lat_num = %d.\n", lng_num, lat_num);
+		debug_msg("getGridIndexByPoint: i = %d j = %d.\n", i, j);
 	}
 
 	index.i = i;
@@ -269,7 +260,7 @@ double QueryGrid::cal_line_distance(double start_lng, double start_lat, double e
 
 bool QueryGrid::on_seg(double lng, double lat, double start_lng, double start_lat, double end_lng, double end_lat)
 {
-	if(((start_lng - lng) * (lng - end_lng)) > 0)
+	if(((start_lng - lng) * (lng - end_lng)) >= 0)
 		return true;
 	return false;
 }
@@ -286,9 +277,10 @@ bool QueryGrid::on_seg(double lng, double lat, double start_lng, double start_la
  *
  * (P3-P1)(P2-P1) = |P3-P1|*|P2-P1|*cos(theta)
  *  ms_distance = distance(P0,P1) = |P3-P1|*cos(theta)
+ *  es_distance = distance(P2,P1) = |P2-P1|
  *  distance = distance(P3,P0) = |P3-P1|*sin(theta)
- *  lng(P0) = (ms_distance*lng(P2) + sign_flag*lng(P1)*|P3-P1|) / sign_flag*|P3-P1| + ms_distance
- *  lat(P0) = (ms_distance*lat(P2) + sign_flag*lat(P1)*|P3-P1|) / sign_flag*|P3-P1| + ms_distance
+ *  lng(P0) = (ms_distance*(lng(P2)-lng(P1))*sign_flag + lng(P1)*|P2-P1|) / es_distance
+ *  lat(P0) = (ms_distance*(lat(P2)-lat(P1))*sign_flag + lat(P1)*|P2-P1|) / es_distance
  */
 seg_point_map QueryGrid::mapGridSeg(double lng, double lat, seg seg)
 {
@@ -309,12 +301,12 @@ seg_point_map QueryGrid::mapGridSeg(double lng, double lat, seg seg)
 
 	es_distance = this->cal_line_distance(start_lng, start_lat, end_lng, end_lat);
 	ps_distance = this->cal_line_distance(start_lng, start_lat, lng, lat);
-	cos_theta = (end_lng-start_lng)*(end_lat-start_lat)/es_distance*ps_distance;
+	cos_theta = ((end_lng-start_lng)*(lng-start_lng)+(end_lat-start_lat)*(lat-start_lat))/es_distance*ps_distance;
 	sign_flag = (cos_theta>=0) ? 1 : -1;
-	ms_distance = cos_theta * ps_distance;
-	distance = ps_distance * sin(acos(cos_theta));
-	map_lng = (ms_distance*end_lat + sign_flag*start_lat*es_distance)/(sign_flag*es_distance+ms_distance);
-	map_lat = (ms_distance*end_lng + sign_flag*start_lng*es_distance)/(sign_flag*es_distance+ms_distance);
+	ms_distance = fabs(cos_theta) * ps_distance;
+	distance = ps_distance * fabs(sin(acos(cos_theta)));
+	map_lng = (ms_distance*(end_lng - start_lng)*sign_flag + es_distance*start_lng)/es_distance;
+	map_lat = (ms_distance*(end_lat - start_lat)*sign_flag + es_distance*start_lat)/es_distance;
 
 	on_seg = this->on_seg(map_lng, map_lat, start_lng, start_lat, end_lng, end_lat);
 
@@ -356,13 +348,17 @@ vector<struct seg_point_map> QueryGrid::getGridSegs(double lng, double lat)
 	int i, j, index_i, index_j, tmp_i, tmp_j;
 	struct grid_index index;
 	vector<seg> segs;
-	//vector<seg_point_map> seg_point_maps;
+	vector<seg_point_map> seg_point_maps;
 
 	segs.clear();
-	//seg_point_maps.clear();
+	seg_point_maps.clear();
 
 	index = this->getGridIndexByPoint(lng, lat);
 
+	if(index.i == -1 || index.j == -1) {
+		debug_msg("get grid index by point error, %d, %d.\n", index.i, index.j);
+		return seg_point_maps;
+	}
 	index_i = index.i - 1;
 	index_j = index.j - 1;
 
@@ -371,8 +367,17 @@ vector<struct seg_point_map> QueryGrid::getGridSegs(double lng, double lat)
 		{
 			tmp_i = index_i + i;
 			tmp_j = index_j + j;
+
+			if(tmp_i < 0 || tmp_i > this->lng_num) {
+				continue;
+			}
+
+			if(tmp_j < 0 || tmp_j > this->lat_num) {
+				continue;
+			}
+
 			for(vector<seg>::iterator iter = this->grid[tmp_i][tmp_j].node_segs.begin(); 
-					iter != this->grid[tmp_i][tmp_j].node_segs.begin(); iter++) {
+					iter != this->grid[tmp_i][tmp_j].node_segs.end(); iter++) {
 				segs.push_back(*iter);
 			}
 		}

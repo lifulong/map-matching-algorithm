@@ -16,18 +16,14 @@ common.o: common.cpp /usr/include/stdc-predef.h /usr/include/stdlib.h \
  /usr/include/i386-linux-gnu/bits/select.h \
  /usr/include/i386-linux-gnu/bits/sigset.h \
  /usr/include/i386-linux-gnu/bits/time.h \
- /usr/include/i386-linux-gnu/bits/select2.h \
  /usr/include/i386-linux-gnu/sys/sysmacros.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h /usr/include/alloca.h \
- /usr/include/i386-linux-gnu/bits/stdlib-bsearch.h \
- /usr/include/i386-linux-gnu/bits/stdlib-float.h \
- /usr/include/i386-linux-gnu/bits/stdlib.h /usr/include/stdio.h \
+ /usr/include/i386-linux-gnu/bits/stdlib-float.h /usr/include/stdio.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
  /usr/lib/gcc/i686-linux-gnu/4.8/include/stdarg.h \
  /usr/include/i386-linux-gnu/bits/stdio_lim.h \
  /usr/include/i386-linux-gnu/bits/sys_errlist.h \
- /usr/include/i386-linux-gnu/bits/stdio.h \
- /usr/include/i386-linux-gnu/bits/stdio2.h /usr/include/c++/4.8/iostream \
+ /usr/include/c++/4.8/iostream \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -35,8 +31,7 @@ common.o: common.cpp /usr/include/stdc-predef.h /usr/include/stdlib.h \
  /usr/include/c++/4.8/iosfwd /usr/include/c++/4.8/bits/stringfwd.h \
  /usr/include/c++/4.8/bits/memoryfwd.h \
  /usr/include/c++/4.8/bits/postypes.h /usr/include/c++/4.8/cwchar \
- /usr/include/i386-linux-gnu/bits/wchar.h \
- /usr/include/i386-linux-gnu/bits/wchar2.h /usr/include/c++/4.8/exception \
+ /usr/include/i386-linux-gnu/bits/wchar.h /usr/include/c++/4.8/exception \
  /usr/include/c++/4.8/bits/atomic_lockfree_defines.h \
  /usr/include/c++/4.8/bits/char_traits.h \
  /usr/include/c++/4.8/bits/stl_algobase.h \
@@ -140,19 +135,13 @@ common.o: common.cpp /usr/include/stdc-predef.h /usr/include/stdlib.h \
 
 /usr/include/i386-linux-gnu/bits/time.h:
 
-/usr/include/i386-linux-gnu/bits/select2.h:
-
 /usr/include/i386-linux-gnu/sys/sysmacros.h:
 
 /usr/include/i386-linux-gnu/bits/pthreadtypes.h:
 
 /usr/include/alloca.h:
 
-/usr/include/i386-linux-gnu/bits/stdlib-bsearch.h:
-
 /usr/include/i386-linux-gnu/bits/stdlib-float.h:
-
-/usr/include/i386-linux-gnu/bits/stdlib.h:
 
 /usr/include/stdio.h:
 
@@ -167,10 +156,6 @@ common.o: common.cpp /usr/include/stdc-predef.h /usr/include/stdlib.h \
 /usr/include/i386-linux-gnu/bits/stdio_lim.h:
 
 /usr/include/i386-linux-gnu/bits/sys_errlist.h:
-
-/usr/include/i386-linux-gnu/bits/stdio.h:
-
-/usr/include/i386-linux-gnu/bits/stdio2.h:
 
 /usr/include/c++/4.8/iostream:
 
@@ -195,8 +180,6 @@ common.o: common.cpp /usr/include/stdc-predef.h /usr/include/stdlib.h \
 /usr/include/c++/4.8/cwchar:
 
 /usr/include/i386-linux-gnu/bits/wchar.h:
-
-/usr/include/i386-linux-gnu/bits/wchar2.h:
 
 /usr/include/c++/4.8/exception:
 

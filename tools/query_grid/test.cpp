@@ -12,8 +12,10 @@ void test()
 
 	QueryGrid *query_grid = new QueryGrid("segs.txt", "grid_info", "grid.txt");
 	//query_grid->loadGrid("grid_ifo", "grid.txt");
-	maps = query_grid->getGridSegs(40.0, 115.5);
+	printf("begin query grid segs......\n");
+	maps = query_grid->getGridSegs(115.5, 40.0);
 
+	printf("maps_size: %d\n", maps.size());
 	for(vector<seg_point_map>::iterator iter = maps.begin(); iter != maps.end(); iter++)
 	{
 		printf("Map:\n");

@@ -44,10 +44,10 @@ void GenMapGrid::genGrid(string segs_file)
 		if(seg_info.size() != 6)
 			continue;
 		seg.seg_id = atoi(seg_info[0].c_str());
-		seg.start_lat = atof(seg_info[1].c_str());
-		seg.start_lng = atof(seg_info[2].c_str());
-		seg.end_lat = atof(seg_info[3].c_str());
-		seg.end_lng = atof(seg_info[4].c_str());
+		seg.start_lng = atof(seg_info[1].c_str());
+		seg.start_lat = atof(seg_info[2].c_str());
+		seg.end_lng = atof(seg_info[3].c_str());
+		seg.end_lat = atof(seg_info[4].c_str());
 		seg.edge_id = atoi(seg_info[5].c_str());
 		this->updateGrids(seg);
 	}
