@@ -258,6 +258,51 @@ double QueryGrid::cal_line_distance(double start_lng, double start_lat, double e
 	return distance;
 }
 
+double QueryGrid::cal_short_distance(double lon1, double lat1, double lon2, double lat2)
+{
+		double ew1, ns1, ew2, ns2;
+		double dx, dy, dew;
+		double distance;
+		// 角度转换为弧度
+		ew1 = lon1 * DEF_PI180;
+		ns1 = lat1 * DEF_PI180;
+		ew2 = lon2 * DEF_PI180;
+		ns2 = lat2 * DEF_PI180;
+		// 经度差
+		dew = ew1 - ew2;
+		// 若跨东经和西经180 度，进行调整
+		if (dew > DEF_PI)
+			dew = DEF_2PI - dew;
+		else if (dew < -DEF_PI)
+			dew = DEF_2PI + dew;
+		dx = DEF_R * cos(ns1) * dew; // 东西方向长度(在纬度圈上的投影长度)
+		dy = DEF_R * (ns1 - ns2); // 南北方向长度(在经度圈上的投影长度)
+		// 勾股定理求斜边长
+		distance = sqrt(dx * dx + dy * dy);
+		return distance;
+}
+
+double QueryGrid::cal_long_distance(double lon1, double lat1, double lon2, double lat2)
+{
+		double ew1, ns1, ew2, ns2;
+		double distance;
+		// 角度转换为弧度
+		ew1 = lon1 * DEF_PI180;
+		ns1 = lat1 * DEF_PI180;
+		ew2 = lon2 * DEF_PI180;
+		ns2 = lat2 * DEF_PI180;
+		// 求大圆劣弧与球心所夹的角(弧度)
+		distance = sin(ns1) * sin(ns2) + cos(ns1) * cos(ns2) * cos(ew1 - ew2);
+		// 调整到[-1..1]范围内，避免溢出
+		if (distance > 1.0)
+			distance = 1.0;
+		else if (distance < -1.0)
+			distance = -1.0;
+		// 求大圆劣弧长度
+			distance = DEF_R * acos(distance);
+		return distance;
+}
+
 bool QueryGrid::on_seg(double lng, double lat, double start_lng, double start_lat, double end_lng, double end_lat)
 {
 	if(((start_lng - lng) * (lng - end_lng)) >= 0)
@@ -300,9 +345,9 @@ seg_point_map QueryGrid::mapGridSeg(double lng, double lat, seg seg)
 	end_lng = seg.end_lng;
 	end_lat = seg.end_lat;
 
-	es_distance = this->cal_line_distance(start_lng, start_lat, end_lng, end_lat);
-	ps_distance = this->cal_line_distance(start_lng, start_lat, lng, lat);
-	pe_distance = this->cal_line_distance(end_lng, end_lat, lng, lat);
+	es_distance = this->cal_short_distance(start_lng, start_lat, end_lng, end_lat);
+	ps_distance = this->cal_short_distance(start_lng, start_lat, lng, lat);
+	pe_distance = this->cal_short_distance(end_lng, end_lat, lng, lat);
 	cos_theta = ((end_lng-start_lng)*(lng-start_lng)+(end_lat-start_lat)*(lat-start_lat))/es_distance*ps_distance;
 	sign_flag = (cos_theta>=0) ? 1 : -1;
 	ms_distance = fabs(cos_theta) * ps_distance;

@@ -13,7 +13,7 @@ void test()
 	QueryGrid *query_grid = new QueryGrid("segs.txt", "grid_info", "grid.txt");
 	//query_grid->loadGrid("grid_ifo", "grid.txt");
 	printf("begin query grid segs......\n");
-	maps = query_grid->getGridSegs(115.5, 40.0, 0);
+	maps = query_grid->getGridSegs(115.714691, 39.571098, 1000);
 
 	printf("maps_size: %d\n", maps.size());
 	for(vector<seg_point_map>::iterator iter = maps.begin(); iter != maps.end(); iter++)
@@ -30,6 +30,7 @@ void test()
 		printf("map_lng:\t%f\n", iter->map_lng);
 		printf("map_lat:\t%f\n", iter->map_lat);
 		printf("distance:\t%f\n", iter->distance);
+		printf("min_distance:\t%f\n", iter->min_distance);
 		printf("on_seg:\t%d\n", iter->on_seg);
 		printf("\n");
 	}

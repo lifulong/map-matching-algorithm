@@ -99,6 +99,11 @@ class QueryGrid {
 
 	private:
 
+		static const double DEF_PI = 3.14159265359; // PI
+		static const double DEF_2PI = 6.28318530712; // 2*PI
+		static const double DEF_PI180 = 0.01745329252; // PI/180.0
+		static const double DEF_R = 6370693.5; // radius of earth
+
 		FILE *_logger;
 		vector<seg> segs;
 		//map(index_stru, grid_node)
@@ -114,6 +119,8 @@ class QueryGrid {
 		void loadGridData(string grid_file);
 		struct grid_index getGridIndexByPoint(double lng, double lat);
 		double cal_line_distance(double start_lng, double start_lat, double end_lng, double end_lat);
+		double cal_short_distance(double lon1, double lat1, double lon2, double lat2);
+		double cal_long_distance(double lon1, double lat1, double lon2, double lat2);
 		bool on_seg(double lng, double lat, double start_lng, double start_lat, double end_lng, double end_lat);
 		seg_point_map mapGridSeg(double lng, double lat, seg seg);
 		vector<struct seg_point_map> mapGridSegs(double lng, double lat, double distance, vector<seg> segs);
