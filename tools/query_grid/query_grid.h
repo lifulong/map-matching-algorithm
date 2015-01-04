@@ -70,6 +70,7 @@ struct seg_point_map {
 	double	map_lng;
 	double	map_lat;
 	double	distance;
+	double	min_distance;
 	bool	on_seg;
 };
 
@@ -94,7 +95,7 @@ class QueryGrid {
 		void loadSegs(string segs_file);
 		void loadGrid(string grid_info, string grid_file);
 		void setValue(string key, string value);
-		vector<struct seg_point_map> getGridSegs(double lng, double lat);
+		vector<struct seg_point_map> getGridSegs(double lng, double lat, double distance=0);
 
 	private:
 
@@ -115,7 +116,7 @@ class QueryGrid {
 		double cal_line_distance(double start_lng, double start_lat, double end_lng, double end_lat);
 		bool on_seg(double lng, double lat, double start_lng, double start_lat, double end_lng, double end_lat);
 		seg_point_map mapGridSeg(double lng, double lat, seg seg);
-		vector<struct seg_point_map> mapGridSegs(double lng, double lat, vector<seg> segs);
+		vector<struct seg_point_map> mapGridSegs(double lng, double lat, double distance, vector<seg> segs);
 };
 
 
