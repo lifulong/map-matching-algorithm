@@ -1,9 +1,10 @@
+#include <stdlib.h>
+#include <stdio.h>
+
 #include <iostream>
 #include <vector>
 
 using namespace std;
-
-#include <stdlib.h>
 
 #include "common.h"
 
@@ -22,23 +23,42 @@ vector<string> SplitBySep(string str, string sep)
 		return result;
 	}
 
-	cout << "sep:" << sep << endl;
 	pos = str.find(sep, 0);
 
 	while(pos != string::npos)
 	{
-		cout << "old_pos:" << old_pos << "\tpos:" << pos << endl;
 		t_str = str.substr(old_pos, pos-old_pos);
-		cout << "t_str:" << t_str << endl;
 		result.push_back(t_str);
-		old_pos = pos;
+		old_pos = pos+1;
 		pos = str.find(sep, old_pos);
-		exit(0);
 	}
 
-	t_str = str.substr(pos);
+	t_str = str.substr(old_pos);
 	result.push_back(t_str);
 
 	return result;
+}
+
+void EchoRunning()
+{
+	static int i = 0;
+
+	int j = i % 4;
+
+	switch(j)
+	{
+		case 0:
+			printf("\b\b\b---");
+			break;
+		case 1:
+			printf("\b\b\b\\\\\\");
+			break;
+		case 2:
+			printf("\b\b\b|||");
+			break;
+		case 3:
+			printf("\b\b\b///");
+			break;
+	}
 }
 
