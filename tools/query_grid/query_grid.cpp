@@ -335,9 +335,9 @@ seg_point_map QueryGrid::mapGridSeg(double lng, double lat, seg seg)
 	//double theta, cos_theta, sin_theta;
 	double map_lng, map_lat;
 	double start_lng, start_lat, end_lng, end_lat;
-	double es_distance, ps_distance;	//es_distance:end to start  ps_distance: point to start
-	double pe_distance, min_distance;
-	double distance, ms_distance;
+	//es_distance:end to start  ps_distance: point to start
+	double es_distance, ps_distance, ms_distance;
+	double ps_short_distance, pe_short_distance, short_distance, min_short_distance;
 	seg_point_map map;
 
 	start_lng = seg.start_lng;
@@ -345,17 +345,23 @@ seg_point_map QueryGrid::mapGridSeg(double lng, double lat, seg seg)
 	end_lng = seg.end_lng;
 	end_lat = seg.end_lat;
 
-	es_distance = this->cal_short_distance(start_lng, start_lat, end_lng, end_lat);
-	ps_distance = this->cal_short_distance(start_lng, start_lat, lng, lat);
-	pe_distance = this->cal_short_distance(end_lng, end_lat, lng, lat);
-	cos_theta = ((end_lng-start_lng)*(lng-start_lng)+(end_lat-start_lat)*(lat-start_lat))/es_distance*ps_distance;
+	//FIXME:point is start_point or end_point
+	es_distance = this->cal_line_distance(start_lng, start_lat, end_lng, end_lat);
+	ps_distance = this->cal_line_distance(start_lng, start_lat, lng, lat);
+	if(ps_distance == 0)
+		cos_theta = 1;
+	else
+		cos_theta = ((end_lng-start_lng)*(lng-start_lng)+(end_lat-start_lat)*(lat-start_lat))/(es_distance*ps_distance);
 	sign_flag = (cos_theta>=0) ? 1 : -1;
 	ms_distance = fabs(cos_theta) * ps_distance;
-	distance = ps_distance * fabs(sin(acos(cos_theta)));
+	//distance = ps_distance * fabs(sin(acos(cos_theta)));
 	map_lng = (ms_distance*(end_lng - start_lng)*sign_flag + es_distance*start_lng)/es_distance;
 	map_lat = (ms_distance*(end_lat - start_lat)*sign_flag + es_distance*start_lat)/es_distance;
 
-	min_distance = ps_distance > pe_distance ? pe_distance : ps_distance;
+	ps_short_distance = this->cal_short_distance(start_lng, start_lat, lng, lat);
+	pe_short_distance = this->cal_short_distance(end_lng, end_lat, lng, lat);
+	short_distance =  this->cal_short_distance(map_lng, map_lat, lng, lat);
+	min_short_distance = ps_short_distance > pe_short_distance ? pe_short_distance : ps_short_distance;
 	on_seg = this->on_seg(map_lng, map_lat, start_lng, start_lat, end_lng, end_lat);
 
 	map.seg_id = seg.seg_id;
@@ -369,8 +375,8 @@ seg_point_map QueryGrid::mapGridSeg(double lng, double lat, seg seg)
 	map.lat = lat;
 	map.map_lng = map_lng;
 	map.map_lat = map_lat;
-	map.distance = distance;
-	map.min_distance = min_distance;
+	map.distance = short_distance;
+	map.min_distance = min_short_distance;
 	map.on_seg = on_seg;
 
 	return map;
@@ -434,7 +440,15 @@ vector<struct seg_point_map> QueryGrid::getGridSegs(double lng, double lat, doub
 
 			for(vector<seg>::iterator iter = this->grid[tmp_i][tmp_j].node_segs.begin(); 
 					iter != this->grid[tmp_i][tmp_j].node_segs.end(); iter++) {
-				segs.push_back(*iter);
+
+				vector<seg>::iterator iter2;
+				for(iter2 = segs.begin(); iter2 != segs.end(); iter2++) {
+					if(iter->seg_id == iter2->seg_id)
+						break;
+				}
+
+				if(iter2 == segs.end())
+					segs.push_back(*iter);
 			}
 		}
 
