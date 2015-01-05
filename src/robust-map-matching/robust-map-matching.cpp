@@ -12,25 +12,25 @@ using namespace std;
 #define NUM_ROADS_THRESHOLD	5
 #define MinNumOfMatchesThreshold 5
 
-struct point {
+struct r_point {
 	double	lat;
 	double	lng;
 };
 
 
-struct trajectory {
-	struct	point;
+struct r_trajectory {
+	struct r_point		point;
 	int		timestamp;
 };
 
 
-struct edge {
+struct r_edge {
 	struct	start_point;
 	struct	end_point;
 };
 
 
-struct road {
+struct r_road {
 };
 
 struct match {
