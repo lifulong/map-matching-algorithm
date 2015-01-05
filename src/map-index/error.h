@@ -9,7 +9,10 @@
 
 class Error {
 	public:
-		const int ERR_OPENFILE;
+		const static int ERR_OK = 0x0000;
+
+		const static int ERR_PARA = 0x0100;
+		const static int ERR_OPENFILE = 0x0101;
 };
 
 

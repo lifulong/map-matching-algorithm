@@ -7,20 +7,54 @@
 
 #define READ_BUFFER_LINE	4096
 
-MapIndex::GenMapGrid(string segs_file)
+double MapIndex::round(double val, double mod, char type)
 {
-	this->_init();
+#define MULTI	100000
+	int i_val, i_mod;
+	int tmp;
+
+	i_val = val*MULTI;
+	i_mod = mod*MULTI;
+
+	if(0 == type)		//up bound
+	{
+		tmp = i_val % i_mod;
+		if(0 != tmp)
+			i_val = i_val - tmp + i_mod;
+		val = (double)i_val / MULTI;
+	}
+	else if(1 == type)		//down bound
+	{
+		tmp = i_val % i_mod;
+		if(0 != tmp)
+			i_val = i_val - tmp;
+		val = (double)i_val / MULTI;
+	}
+	else
+	{
+		return val;
+	}
+
+	return val;
 }
 
-int MapIndex::getErrno()
+void MapIndex::preprocess_grid_info(string type)
 {
-	return this->errno;
+	if(0 == strcmp(type.c_str(), "round"))
+	{
+		debug_msg("%f\t%f\t%f\t%f\n", start_lat, end_lat, start_lng, end_lng);
+		start_lat = this->round(start_lat, lat_gap, 1);
+		end_lat = this->round(end_lat, lat_gap, 0);
+		start_lng = this->round(start_lng, lng_gap, 1);
+		end_lng = this->round(end_lng, lng_gap, 0);
+	}
+
+	debug_msg("%f\t%f\t%f\t%f\t%f\t%f\n", start_lat, end_lat, start_lng, end_lng, lat_gap, lng_gap);
+	lat_num = fabs(end_lat - start_lat) / lat_gap + 1;
+	lng_num = fabs(end_lng - start_lng) / lng_gap + 1;
+	debug_msg("lat_num:%d\tlng_num:%d\n", lat_num, lng_num);
 }
 
-string MapIndex::getErrMsg()
-{
-	return this->errmsg;
-}
 
 void MapIndex::genGrid(string segs_file)
 {
@@ -95,69 +129,8 @@ void MapIndex::dumpGrid(string dump_file="")
 
 //private functions
 
-void MapIndex::_init()
-{
-	lat_num = lng_num = 0;
-	start_lat = START_LAT;
-	end_lat = END_LAT;
-	start_lng = START_LNG;
-	end_lng = END_LNG;
-	lat_gap = LAT_GAP;
-	lng_gap = LNG_GAP;
 
-	this->_preprocess("round");
-	this->_initGrid();
-}
-
-double MapIndex::round(double val, double mod, char type)
-{
-#define MULTI	100000
-	int i_val, i_mod;
-	int tmp;
-
-	i_val = val*MULTI;
-	i_mod = mod*MULTI;
-
-	if(0 == type)		//up bound
-	{
-		tmp = i_val % i_mod;
-		if(0 != tmp)
-			i_val = i_val - tmp + i_mod;
-		val = (double)i_val / MULTI;
-	}
-	else if(1 == type)		//down bound
-	{
-		tmp = i_val % i_mod;
-		if(0 != tmp)
-			i_val = i_val - tmp;
-		val = (double)i_val / MULTI;
-	}
-	else
-	{
-		return val;
-	}
-
-	return val;
-}
-
-void MapIndex::preprocess(string type)
-{
-	if(0 == strcmp(type.c_str(), "round"))
-	{
-		debug_msg("%f\t%f\t%f\t%f\n", start_lat, end_lat, start_lng, end_lng);
-		start_lat = this->_round(start_lat, lat_gap, 1);
-		end_lat = this->_round(end_lat, lat_gap, 0);
-		start_lng = this->_round(start_lng, lng_gap, 1);
-		end_lng = this->_round(end_lng, lng_gap, 0);
-	}
-
-	debug_msg("%f\t%f\t%f\t%f\t%f\t%f\n", start_lat, end_lat, start_lng, end_lng, lat_gap, lng_gap);
-	lat_num = fabs(end_lat - start_lat) / lat_gap + 1;
-	lng_num = fabs(end_lng - start_lng) / lng_gap + 1;
-	debug_msg("lat_num:%d\tlng_num:%d\n", lat_num, lng_num);
-}
-
-void MapIndex::initGrid()
+void MapIndex::initGenGrid()
 {
 	int i, j;
 

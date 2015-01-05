@@ -15,6 +15,7 @@
 
 using namespace std;
 
+#include "error.h"
 #include "logger.h"
 #include "debug.h"
 
@@ -40,6 +41,27 @@ using namespace std;
 */
 
 #define LINE_BUFFER_LEN		40960
+
+struct point {
+	double	lng;
+	double	lat;
+};
+
+struct inode {
+	int				node_index;
+	struct point	point;
+};
+
+struct iedge {
+	int		edge_index;
+	int		start_inode_index;
+	int		end_inode_index;
+};
+
+struct igeo {
+	int		edge_index;
+	vector<point>	points;
+};
 
 struct seg {
 	int		seg_id;
@@ -83,20 +105,12 @@ class MapIndex {
 
 	public:
 
-		MapIndex(string node_file, string edge_file, string geo_file, string segs_file, 
+		MapIndex(string nodes_file, string edges_file, string geos_file, string segs_file, 
 				string grid_info, string grid_file, string logfile="");
 
 		int getErrno();
 		string getErrMsg();
-		void genGrid(string segs_file);
-		void dumpGrid(string dump_file);
 
-		void loading_inodes(string node_file);
-		void loading_iedges(string edge_file);
-		void loading_igeos(string geo_file);
-		void loadSegs(string segs_file);
-		void loadGrid(string grid_info, string grid_file);
-		void setValue(string key, string value);
 		vector<struct seg_point_map> getGridSegs(double lng, double lat, double distance=0);
 
 	private:
@@ -110,20 +124,38 @@ class MapIndex {
 		int lat_num, lng_num;
 		//int grid_lat_len, grid_lng_len;
 		int errno;
-		string errmsg;
+		string errMsg;
 		Logger *logger;
 		vector<struct inode> inodes;
 		vector<struct iedge> iedges;
 		vector<struct igeo> igeos;
-		vector<struct iseg> isegs;
+		vector<struct seg> segs;
 		//FIXME: use map(index_stru, grid_node) instead
 		struct grid_node **grid;
 
 
-		void _init();
-		double round(double val, double mod, char type);
-		void preprocess(string type);
+		void loadNodes(string nodes_file);
+		void loadEdges(string edges_file);
+		void loadGeos(string geos_file);
+		void loadSegs(string segs_file);
+		void setValue(string key, string value);
+		void loadGridInfo(string grid_info);
+		void dumpGridInfo();
+		void loadGridData(string grid_file);
+
 		void initGrid();
+
+		void initMapIndex();
+
+		//gen segs
+		void genSegs(string geos_file="");
+		void dumpSegs(string segs_file="");
+
+		//gen grid
+		double round(double val, double mod, char type);
+		void preprocess_grid_info(string type);
+
+		void initGenGrid();
 		struct grid_index getGridIndexByPoint(double lng, double lat);
 		void updateGrid(struct grid_index index, struct seg seg);
 		void updateHorizontalGrids(double k, double start_lng, double start_lat, 
@@ -135,12 +167,10 @@ class MapIndex {
 		void updateVertOrientGrids(double k, double start_lng, double start_lat, 
 				double end_lng, double end_lat, struct seg seg);
 		void updateGrids(struct seg seg);
+		void genGrid(string segs_file="");
+		void dumpGrid(string dump_file);
 
-
-		void init();
-		void loadGridInfo(string grid_info);
-		void dumpGridInfo();
-		void loadGridData(string grid_file);
+		//query grid
 		double cal_line_distance(double start_lng, double start_lat, double end_lng, double end_lat);
 		double cal_short_distance(double lon1, double lat1, double lon2, double lat2);
 		double cal_long_distance(double lon1, double lat1, double lon2, double lat2);
