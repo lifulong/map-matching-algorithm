@@ -10,6 +10,6 @@ map_index_serve_LDFLAGS=
 
 map_index_serve_DEPENDENCIES=
 
-AM_CXXFLAGS=-Wall -g -O0
+AM_CXXFLAGS=-Wall -g -O0 -DTEST_MAP_INDEX
 
 
