@@ -68,19 +68,26 @@ struct trajectory {
 	vector<position>	positions;
 };
 
+struct seg_candidate {
+	struct seg		seg;
+	double			seg_heading;
+	double			dis_deviation;
+	double			heading_deviation;
+	int				map_point_num;
+};
+
 struct map_track {
-	int		uniq_id;
-	double	curr_lng;
-	double	curr_lat;
-	double	curr_dis;
-	double	curr_heading;
-	double	dis_deviation;
-	double	heading_deviation;
-	int		orientation;			//在当前路段的行驶方向[0(unkown),1,-1]
-	struct seg			current_seg;
-	vector<seg>			adjacent;
-	vector<seg>			candidates;
-	vector<map_point>	points;
+	int				uniq_id;
+	double			curr_lng;
+	double			curr_lat;
+	double			curr_dis;
+	double			curr_heading;
+	int				orientation;			//在当前路段的行驶方向[0(unkown),1,-1]
+	struct seg_candidate	current_seg;
+	vector<seg>				adjacent;	//update by orientation
+#define MAX_CANDIDATE_LEN	5
+	vector<seg_candidate>	candidates;
+	vector<map_point>		points;
 };
 
 class Matcher {
