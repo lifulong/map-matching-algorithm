@@ -24,9 +24,19 @@ Here is some open source map matching algorithms for map vehicle track to real r
 5.	[A Three-step General Map Matching Method in the GIS](./papers/A Three-step General Map Matching Method in the GIS.pdf)
 6.	[A GRID-BASED SPATIAL INDEX FOR MATCHING BETWEEN MOVING VEHICLES AND ROAD NETWORK IN A REAL-TIME ENVIRONMENT](./papers/A GRID-BASED SPATIAL INDEX FOR MATCHING BETWEEN MOVING VEHICLES AND ROAD NETWORK IN A REAL-TIME ENVIRONMENT.pdf)
 
+
+###Develop Plan
+
+1.	Map Index Support
+2.	Iter MapMatching Support
+3.	ST,HMM Map Match Support
+4.	Working as a service base on Ace framework
+5.	Service config support
+6.	Performance optimize
+
 ###Develop Status
 
-	Develop ing ...
+*	Develop ing ...
 
 ###Authors
 
