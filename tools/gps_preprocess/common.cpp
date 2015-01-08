@@ -62,3 +62,9 @@ void EchoRunning()
 	}
 }
 
+double String2Double(string str)
+{
+}
+
+
+

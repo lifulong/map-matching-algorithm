@@ -48,6 +48,9 @@ class GpsPreprocess {
 
 		void loadJsonGps(string gps_file);
 		void dumpJsonGps(string dump_file);
+		void appendLongSpeed();
+		void appendShortSpeed();
+		void appendLineHeading();
 
 	private:
 
@@ -61,10 +64,14 @@ class GpsPreprocess {
 		int errno;
 		string errmsg;
 
-		void init();
-		double cal_line_distance(double start_lng, double start_lat, double end_lng, double end_lat);
-		double cal_short_distance(double lon1, double lat1, double lon2, double lat2);
-		double cal_long_distance(double lon1, double lat1, double lon2, double lat2);
+		void init(string data_file);
+		bool isEqulDouble(double val1, double val2);
+		double calLineDistance(double start_lng, double start_lat, double end_lng, double end_lat);
+		double calShortDistance(double lon1, double lat1, double lon2, double lat2);
+		double calLongDistance(double lon1, double lat1, double lon2, double lat2);
+		double calShortSpeed(double lon1, double lat1, double lon2, double lat2);
+		double calLongSpeed(double lon1, double lat1, double lon2, double lat2);
+		double calLineHeading(double lon1, double lat1, double lon2, double lat2);
 };
 
 

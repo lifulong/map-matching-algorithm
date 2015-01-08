@@ -7,13 +7,27 @@ using namespace std;
 #include "gps_preprocess.h"
 #include "../../json/json.h"
 
+#define DEVIATION	1.E-10
+
 
 GpsPreprocess::GpsPreprocess(string data_file)
 {
 	if("" == data_file)
 		return;
 
-	cout << "no support input file now." << endl;
+	this->init(data_file);
+}
+
+void GpsPreprocess::init(string data_file)
+{
+	this->loadJsonGps(data_file);
+}
+
+bool GpsPreprocess::isEqulDouble(double val1, double val2)
+{
+	if(fabs(val1-val2) <= DEVIATION)
+		return true;
+	return false;
 }
 
 int GpsPreprocess::getErrno()
@@ -41,15 +55,14 @@ void GpsPreprocess::loadJsonGps(string gps_file)
 	{
 		json_string += string(buffer);
 	}
+	json_string += string(buffer);
 
 	infile.close();
 
-	js.clear();
-	js = json(json_string);
+	this->js.clear();
+	this->js = json::parse(json_string);
 
-	cout << "json_string:" << json_string << endl;
-	cout << "json_size:" << js.size() << endl;
-	cout << "to_string:" << js.to_string() << endl;
+	//debug_msg("json_size:%d.\n", js.size());
 
 	return ;
 }
@@ -65,7 +78,43 @@ static const double DEF_PI180 = 0.01745329252; // PI/180.0
 static const double DEF_R = 6370693.5; // radius of earth
 */
 
-double GpsPreprocess::cal_line_distance(double start_lng, double start_lat, double end_lng, double end_lat)
+void GpsPreprocess::appendLongSpeed()
+{
+	return;
+}
+
+void GpsPreprocess::appendShortSpeed()
+{
+	return;
+}
+
+void GpsPreprocess::appendLineHeading()
+{
+	unsigned int i;
+	double last_lng, last_lat, lng, lat;
+	double heading;
+
+	cout << atof("116.491225") << endl;
+	cout << js[0]["lng"].to_string() << endl;
+	cout << js[0]["lng"].to_string().c_str() << endl;
+	cout << atof(js[0]["lng"].to_string().c_str()) << endl;
+	return;
+	lng = atof(js[0]["lng"].to_string().c_str());
+	lat = atof(js[0]["lat"].to_string().c_str());
+	for(i = 1; i < this->js.size(); i++)
+	{
+		last_lng = lng;
+		last_lat = lat;
+		lng = atof(js[i]["lng"].to_string().c_str());
+		lat = atof(js[i]["lat"].to_string().c_str());
+		heading = this->calLineHeading(last_lng, last_lat, lng, lat);
+		debug_msg("%f\t%f\t%f\t%f\t%f\n", last_lng, last_lat, lng, lat, heading);
+	}
+
+	return;
+}
+
+double GpsPreprocess::calLineDistance(double start_lng, double start_lat, double end_lng, double end_lat)
 {
 	double distance, sq_distance;
 
@@ -75,7 +124,7 @@ double GpsPreprocess::cal_line_distance(double start_lng, double start_lat, doub
 	return distance;
 }
 
-double GpsPreprocess::cal_short_distance(double lon1, double lat1, double lon2, double lat2)
+double GpsPreprocess::calShortDistance(double lon1, double lat1, double lon2, double lat2)
 {
 		double ew1, ns1, ew2, ns2;
 		double dx, dy, dew;
@@ -99,7 +148,7 @@ double GpsPreprocess::cal_short_distance(double lon1, double lat1, double lon2, 
 		return distance;
 }
 
-double GpsPreprocess::cal_long_distance(double lon1, double lat1, double lon2, double lat2)
+double GpsPreprocess::calLongDistance(double lon1, double lat1, double lon2, double lat2)
 {
 		double ew1, ns1, ew2, ns2;
 		double distance;
@@ -118,6 +167,49 @@ double GpsPreprocess::cal_long_distance(double lon1, double lat1, double lon2, d
 		// 求大圆劣弧长度
 			distance = DEF_R * acos(distance);
 		return distance;
+}
+
+double GpsPreprocess::calLongSpeed(double lng1, double lat1, double lng2, double lat2)
+{
+	return 0;
+}
+
+double GpsPreprocess::calShortSpeed(double lng1, double lat1, double lng2, double lat2)
+{
+	return 0;
+}
+
+
+double GpsPreprocess::calLineHeading(double lng1, double lat1, double lng2, double lat2)
+{
+	double theta;
+	double cos_theta;
+	double fake_lng, fake_lat;
+	double distance1, distance2;
+
+	if(isEqulDouble(lng1, lng2))
+	{
+		if(lat2 > lat1)
+			theta = 90.0;
+		else
+			theta = -90.0;
+		return theta;
+	}
+
+	fake_lng = lng2;
+	fake_lat = lat1;
+
+	distance1 = this->calLongDistance(lng1, lat1, lng2, lat2);
+	distance2 = this->calLongDistance(lng1, lat1, fake_lng, fake_lat);
+
+	//FIXME: check if distance1 or distance2 equal zero
+	debug_msg("%f\t%f\n", distance1, distance2);
+	cos_theta = ((lng2-lng1)*(fake_lng-lng1)+(lat2-lat1)*(fake_lat-lat1)) / (distance1*distance2);
+	debug_msg("%f\n", cos_theta);
+
+	theta = acos(cos_theta);
+
+	return theta;
 }
 
 
