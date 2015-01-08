@@ -4,6 +4,7 @@ using namespace std;
 
 #include <math.h>
 
+#include "common.h"
 #include "gps_preprocess.h"
 #include "../../json/json.h"
 
@@ -23,7 +24,7 @@ void GpsPreprocess::init(string data_file)
 	this->loadJsonGps(data_file);
 }
 
-bool GpsPreprocess::isEqulDouble(double val1, double val2)
+bool GpsPreprocess::isEqualDouble(double val1, double val2)
 {
 	if(fabs(val1-val2) <= DEVIATION)
 		return true;
@@ -80,6 +81,27 @@ static const double DEF_R = 6370693.5; // radius of earth
 
 void GpsPreprocess::appendLongSpeed()
 {
+	unsigned int i;
+	double last_lng, last_lat, lng, lat;
+	double last_tm, tm;
+	double speed;
+
+	lng = String2Double(js[0]["lng"].to_string());
+	lat = String2Double(js[0]["lat"].to_string());
+	tm = String2Double(js[0]["gps_time"].to_string());
+	this->js[0]["speed"] = 0;
+	for(i = 1; i < this->js.size(); i++)
+	{
+		last_lng = lng;
+		last_lat = lat;
+		last_tm = tm;
+		lng = String2Double(js[i]["lng"].to_string());
+		lat = String2Double(js[i]["lat"].to_string());
+		speed = this->calLongSpeed(last_lng, last_lat, lng, lat, last_tm, tm);
+		debug_msg("%f\t%f\t%f\t%f\t%f\n", last_lng, last_lat, lng, lat, speed);
+		this->js[i]["speed"] = speed;
+	}
+
 	return;
 }
 
@@ -94,21 +116,18 @@ void GpsPreprocess::appendLineHeading()
 	double last_lng, last_lat, lng, lat;
 	double heading;
 
-	cout << atof("116.491225") << endl;
-	cout << js[0]["lng"].to_string() << endl;
-	cout << js[0]["lng"].to_string().c_str() << endl;
-	cout << atof(js[0]["lng"].to_string().c_str()) << endl;
-	return;
-	lng = atof(js[0]["lng"].to_string().c_str());
-	lat = atof(js[0]["lat"].to_string().c_str());
+	lng = String2Double(js[0]["lng"].to_string());
+	lat = String2Double(js[0]["lat"].to_string());
+	this->js[0]["heading"] = 0;
 	for(i = 1; i < this->js.size(); i++)
 	{
 		last_lng = lng;
 		last_lat = lat;
-		lng = atof(js[i]["lng"].to_string().c_str());
-		lat = atof(js[i]["lat"].to_string().c_str());
+		lng = String2Double(js[i]["lng"].to_string());
+		lat = String2Double(js[i]["lat"].to_string());
 		heading = this->calLineHeading(last_lng, last_lat, lng, lat);
-		debug_msg("%f\t%f\t%f\t%f\t%f\n", last_lng, last_lat, lng, lat, heading);
+		//debug_msg("%f\t%f\t%f\t%f\t%f\t%f\n", last_lng, last_lat, lng, lat, heading, heading/DEF_PI180 );
+		this->js[i]["heading"] = heading;
 	}
 
 	return;
@@ -169,16 +188,44 @@ double GpsPreprocess::calLongDistance(double lon1, double lat1, double lon2, dou
 		return distance;
 }
 
-double GpsPreprocess::calLongSpeed(double lng1, double lat1, double lng2, double lat2)
+double GpsPreprocess::calLongSpeed(double lng1, double lat1, double lng2, double lat2, double time1, double time2)
 {
-	return 0;
+	double distance, time_gap;
+
+	if(isEqualDouble(time1, time2))
+		return 0;
+
+	time_gap = time2 - time1;
+	distance = this->calLongDistance(lng1, lat1, lng2, lat2);
+
+	return distance/time_gap;
 }
 
-double GpsPreprocess::calShortSpeed(double lng1, double lat1, double lng2, double lat2)
+double GpsPreprocess::calShortSpeed(double lng1, double lat1, double lng2, double lat2, double time1, double time2)
 {
-	return 0;
+	double distance, time_gap;
+
+	if(isEqualDouble(time1, time2))
+		return 0;
+
+	time_gap = time2 - time1;
+	distance = this->calShortDistance(lng1, lat1, lng2, lat2);
+
+	return distance/time_gap;
 }
 
+/**
+ *				 +  P2
+ *             .
+ *           .
+ *         .
+ *       .
+ *     . )theta
+ * P1 +----------+  P3
+ *
+ *
+ * (P2-P1(P3-P1) = |P2-P1|*|P3-P1|*cos(theta)
+ */
 
 double GpsPreprocess::calLineHeading(double lng1, double lat1, double lng2, double lat2)
 {
@@ -187,27 +234,33 @@ double GpsPreprocess::calLineHeading(double lng1, double lat1, double lng2, doub
 	double fake_lng, fake_lat;
 	double distance1, distance2;
 
-	if(isEqulDouble(lng1, lng2))
-	{
+	if(isEqualDouble(lng1, lng2))
+		return 0.0;
+
+	if(isEqualDouble(lng1, lng2)) {
+
 		if(lat2 > lat1)
-			theta = 90.0;
+			theta = DEF_PI/2;
 		else
-			theta = -90.0;
+			theta = -DEF_PI/2;
 		return theta;
 	}
 
-	fake_lng = lng2;
+	fake_lng = lng1 + fabs(lng2 - lng1);
 	fake_lat = lat1;
 
-	distance1 = this->calLongDistance(lng1, lat1, lng2, lat2);
-	distance2 = this->calLongDistance(lng1, lat1, fake_lng, fake_lat);
+	distance1 = this->calLineDistance(lng1, lat1, lng2, lat2);
+	distance2 = this->calLineDistance(lng1, lat1, fake_lng, fake_lat);
 
 	//FIXME: check if distance1 or distance2 equal zero
-	debug_msg("%f\t%f\n", distance1, distance2);
+	if(isEqualDouble(distance1, 0) || isEqualDouble(distance2, 0)) {
+		debug_msg("%f\t%f\n", distance1, distance2);
+		return 0.0;
+	}
 	cos_theta = ((lng2-lng1)*(fake_lng-lng1)+(lat2-lat1)*(fake_lat-lat1)) / (distance1*distance2);
-	debug_msg("%f\n", cos_theta);
 
 	theta = acos(cos_theta);
+	//debug_msg("%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", lng2-lng1, fake_lng-lng1, lat2-lat1, fake_lat-lat1, distance1, distance2, cos_theta, theta);
 
 	return theta;
 }

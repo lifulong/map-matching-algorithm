@@ -65,12 +65,12 @@ class GpsPreprocess {
 		string errmsg;
 
 		void init(string data_file);
-		bool isEqulDouble(double val1, double val2);
+		bool isEqualDouble(double val1, double val2);
 		double calLineDistance(double start_lng, double start_lat, double end_lng, double end_lat);
 		double calShortDistance(double lon1, double lat1, double lon2, double lat2);
 		double calLongDistance(double lon1, double lat1, double lon2, double lat2);
-		double calShortSpeed(double lon1, double lat1, double lon2, double lat2);
-		double calLongSpeed(double lon1, double lat1, double lon2, double lat2);
+		double calShortSpeed(double lon1, double lat1, double lon2, double lat2, double last_time, double time);
+		double calLongSpeed(double lon1, double lat1, double lon2, double lat2, double last_time, double time);
 		double calLineHeading(double lon1, double lat1, double lon2, double lat2);
 };
 

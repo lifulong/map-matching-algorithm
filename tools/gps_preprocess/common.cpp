@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include <iostream>
 #include <vector>
@@ -64,6 +65,26 @@ void EchoRunning()
 
 double String2Double(string str)
 {
+	size_t i, len;
+	size_t first_pos, last_pos;
+
+	if("" == str)
+		return 0.0;
+
+	first_pos = str.find_first_of("\"");
+	last_pos = str.find_last_of("\"");
+
+	if(string::npos != first_pos && string::npos != last_pos && first_pos != last_pos)
+		str = str.substr(first_pos+1, last_pos-1);
+
+	len = str.length();
+	for(i = 0; i < len; i++)
+	{
+		if(!isdigit(str[i]) && '.' != str[i])
+			return 0.0;
+	}
+
+	return strtold(str.c_str(), NULL);
 }
 
 
