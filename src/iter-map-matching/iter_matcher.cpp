@@ -95,6 +95,45 @@ double Matcher::calHeading(double lng1, double lat1, double lng2, double lat2)
 	return theta;
 }
 
+/**
+ *
+ *
+ *			^
+ *			|
+ *		1	|\
+ *			| \
+ *		0.8	|_ \
+ *			|  |\
+ *			|  | \
+ *			|  |  \
+ *			|  |   \
+ *		--------------------> degrees
+ *		0	|  18*  90*
+ *
+ *
+ *
+ *			^
+ *			|
+ *		1	|\
+ *			| \
+ *		0.7	|_ \
+ *			|  |\
+ *			|  | \
+ *			|  |  \
+ *			|  |   \
+ *		--------------------> distance
+ *		0	|  15m  50m
+ *
+ *
+ * @InfoNeededForMatcher:
+ *		on_road: true or false
+ *		candidate_segs:[vector]
+ *			has update_candidate: true or false
+ *			current_seg: seg_id, distance_ratio_from_begin
+ *			road seg: seg_stru, heading, average_distance, successor_seg
+ *		:
+ **/
+
 int Matcher::doMatch(struct position, struct map_track map_track)
 {
 	double heading;
