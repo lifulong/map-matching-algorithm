@@ -47,7 +47,8 @@ class GpsPreprocess {
 		string getErrMsg();
 
 		void loadJsonGps(string gps_file);
-		void dumpJsonGps(string dump_file);
+		void dumpJsonGps(string dump_file="");
+		void dumpJsonGpsBeauty(string dump_file="");
 		void appendLongSpeed();
 		void appendShortSpeed();
 		void appendLineHeading();

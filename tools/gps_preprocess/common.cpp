@@ -3,6 +3,7 @@
 #include <ctype.h>
 
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 using namespace std;
@@ -87,5 +88,16 @@ double String2Double(string str)
 	return strtold(str.c_str(), NULL);
 }
 
+
+string Double2String(double val)
+{
+	stringstream ss;
+	string str;
+
+	ss << val;
+	str = ss.str();
+
+	return str;
+}
 
 

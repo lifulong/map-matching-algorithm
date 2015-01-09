@@ -70,6 +70,66 @@ void GpsPreprocess::loadJsonGps(string gps_file)
 
 void GpsPreprocess::dumpJsonGps(string dump_file)
 {
+	string json_string = "";
+	FILE *fp;
+
+	if("" != dump_file) {
+		fp = fopen(dump_file.c_str(), "w");
+		//FIXME: log the error here.
+		if(NULL == fp)
+			fp = stdout;
+	}
+	else
+		fp = stdout;
+
+	json_string = this->js.to_string();
+
+	fwrite(json_string.c_str(), json_string.length(), 1, fp);
+
+	if(stdout != fp)
+		fclose(fp);
+}
+
+void GpsPreprocess::dumpJsonGpsBeauty(string dump_file)
+{
+	size_t i;
+	string json_string = "";
+	FILE *fp;
+	double last_heading=0, heading=0, heading_dis=0;
+
+	if("" != dump_file) {
+		fp = fopen(dump_file.c_str(), "w");
+		//FIXME: log the error here.
+		if(NULL == fp)
+			fp = stdout;
+	}
+	else
+		fp = stdout;
+
+	json_string = "time\t\t\tlng\t\tlat\t\theading\t\theading(dg)\theading_dis\tspeed(ms)\tspeed(kmh)\n";
+	fwrite(json_string.c_str(), json_string.length(), 1, fp);
+
+	for(i = 0; i < this->js.size(); i++)
+	{
+		last_heading = heading;
+		heading = String2Double(this->js[i]["heading"].to_string())/DEF_PI180;
+		heading_dis = heading - last_heading;
+		//FIXME: a more high-performance method to use json lib
+		json_string = this->js[i]["gps_time"].to_string()
+			+ "\t" + this->js[i]["lng"].to_string()
+			+ "\t" + this->js[i]["lat"].to_string()
+			+ "\t" + this->js[i]["heading"].to_string()
+			+ "\t" + Double2String(String2Double(this->js[i]["heading"].to_string())/DEF_PI180)
+			+ "\t" + Double2String(heading_dis)
+			+ "\t" + this->js[i]["speed"].to_string()
+			+ "\t" + Double2String(String2Double(this->js[i]["speed"].to_string())*3.6)
+			+ "\n";
+
+		fwrite(json_string.c_str(), json_string.length(), 1, fp);
+	}
+
+	if(stdout != fp)
+		fclose(fp);
 }
 
 /*
@@ -97,8 +157,9 @@ void GpsPreprocess::appendLongSpeed()
 		last_tm = tm;
 		lng = String2Double(js[i]["lng"].to_string());
 		lat = String2Double(js[i]["lat"].to_string());
+		tm = String2Double(js[i]["gps_time"].to_string());
 		speed = this->calLongSpeed(last_lng, last_lat, lng, lat, last_tm, tm);
-		debug_msg("%f\t%f\t%f\t%f\t%f\n", last_lng, last_lat, lng, lat, speed);
+		//debug_msg("%f\t%f\t%f\t%f\tspeed:%f\n", last_lng, last_lat, lng, lat, speed);
 		this->js[i]["speed"] = speed;
 	}
 
@@ -126,7 +187,7 @@ void GpsPreprocess::appendLineHeading()
 		lng = String2Double(js[i]["lng"].to_string());
 		lat = String2Double(js[i]["lat"].to_string());
 		heading = this->calLineHeading(last_lng, last_lat, lng, lat);
-		//debug_msg("%f\t%f\t%f\t%f\t%f\t%f\n", last_lng, last_lat, lng, lat, heading, heading/DEF_PI180 );
+		//debug_msg("%f\t%f\t%f\t%f\theading:%f\theadingDgr:%f\n", last_lng, last_lat, lng, lat, heading, heading/DEF_PI180 );
 		this->js[i]["heading"] = heading;
 	}
 
@@ -188,6 +249,11 @@ double GpsPreprocess::calLongDistance(double lon1, double lat1, double lon2, dou
 		return distance;
 }
 
+/**
+ * @desc:	m/s = 3.6 km/h
+ * @return: speed(m/s)
+ * @
+ */
 double GpsPreprocess::calLongSpeed(double lng1, double lat1, double lng2, double lat2, double time1, double time2)
 {
 	double distance, time_gap;
@@ -195,8 +261,10 @@ double GpsPreprocess::calLongSpeed(double lng1, double lat1, double lng2, double
 	if(isEqualDouble(time1, time2))
 		return 0;
 
-	time_gap = time2 - time1;
+	time_gap = (time2 - time1)/1000;		// ms to s
 	distance = this->calLongDistance(lng1, lat1, lng2, lat2);
+
+	//debug_msg("time_gap:%f\tdistance:%f\n", time_gap, distance);
 
 	return distance/time_gap;
 }
@@ -254,12 +322,14 @@ double GpsPreprocess::calLineHeading(double lng1, double lat1, double lng2, doub
 
 	//FIXME: check if distance1 or distance2 equal zero
 	if(isEqualDouble(distance1, 0) || isEqualDouble(distance2, 0)) {
-		debug_msg("%f\t%f\n", distance1, distance2);
+		debug_msg("dis1:%f\tdis2:%f\n", distance1, distance2);
 		return 0.0;
 	}
 	cos_theta = ((lng2-lng1)*(fake_lng-lng1)+(lat2-lat1)*(fake_lat-lat1)) / (distance1*distance2);
 
 	theta = acos(cos_theta);
+	if(lat2 < lat1)
+		theta = DEF_2PI - theta;
 	//debug_msg("%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", lng2-lng1, fake_lng-lng1, lat2-lat1, fake_lat-lat1, distance1, distance2, cos_theta, theta);
 
 	return theta;
