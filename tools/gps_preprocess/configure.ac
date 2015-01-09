@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([FULL-PACKAGE-NAME], [VERSION], [BUG-REPORT-ADDRESS])
+AC_INIT([gps_preprocess], [0.1], [msl.fulong@gmail.com])
 #AM_INIT_AUTOMAKE([1.12 foreign no-define])
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR([common.h])

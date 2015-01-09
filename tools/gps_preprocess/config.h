@@ -29,31 +29,31 @@
 #define HAVE_UNISTD_H 1
 
 /* Name of package */
-#define PACKAGE "full-package-name"
+#define PACKAGE "gps_preprocess"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "BUG-REPORT-ADDRESS"
+#define PACKAGE_BUGREPORT "msl.fulong@gmail.com"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "FULL-PACKAGE-NAME"
+#define PACKAGE_NAME "gps_preprocess"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "FULL-PACKAGE-NAME VERSION"
+#define PACKAGE_STRING "gps_preprocess 0.1"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "full-package-name"
+#define PACKAGE_TARNAME "gps_preprocess"
 
 /* Define to the home page for this package. */
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "VERSION"
+#define PACKAGE_VERSION "0.1"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "VERSION"
+#define VERSION "0.1"
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
