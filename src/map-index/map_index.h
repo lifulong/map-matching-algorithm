@@ -113,17 +113,20 @@ class MapIndex {
 
 		vector<struct seg_point_map> getGridSegs(double lng, double lat, double distance=0);
 
+		seg_point_map mapGridSeg(double lng, double lat, seg seg);
+		vector<struct seg_point_map> mapGridSegs(double lng, double lat, double distance, vector<seg> segs);
+
 	private:
-		static const double DEF_PI = 3.14159265359; // PI
-		static const double DEF_2PI = 6.28318530712; // 2*PI
-		static const double DEF_PI180 = 0.01745329252; // PI/180.0
-		static const double DEF_R = 6370693.5; // radius of earth
+		static constexpr double DEF_PI = 3.14159265359; // PI
+		static constexpr double DEF_2PI = 6.28318530712; // 2*PI
+		static constexpr double DEF_PI180 = 0.01745329252; // PI/180.0
+		static constexpr double DEF_R = 6370693.5; // radius of earth
 
 		double start_lng, end_lng, start_lat, end_lat;
 		double lat_gap, lng_gap;
 		int lat_num, lng_num;
 		//int grid_lat_len, grid_lng_len;
-		int errno;
+		int _errno;
 		string errMsg;
 		Logger *logger;
 		vector<struct inode> inodes;
@@ -175,7 +178,5 @@ class MapIndex {
 		double cal_short_distance(double lon1, double lat1, double lon2, double lat2);
 		double cal_long_distance(double lon1, double lat1, double lon2, double lat2);
 		bool on_seg(double lng, double lat, double start_lng, double start_lat, double end_lng, double end_lat);
-		seg_point_map mapGridSeg(double lng, double lat, seg seg);
-		vector<struct seg_point_map> mapGridSegs(double lng, double lat, double distance, vector<seg> segs);
 };
 

@@ -26,7 +26,7 @@ void test()
 	printf("begin query grid segs......\n");
 	maps = map_index->getGridSegs(115.714691, 39.570098, 200);
 
-	printf("maps_size: %d\n", maps.size());
+	printf("maps_size: %lu\n", maps.size());
 	for(vector<seg_point_map>::iterator iter = maps.begin(); iter != maps.end(); iter++)
 	{
 		printf("Map:\n");

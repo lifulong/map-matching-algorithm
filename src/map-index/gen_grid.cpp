@@ -326,7 +326,7 @@ void MapIndex::updateGrids(struct seg seg)
 	} else {
 
 		double k = (start_lng - end_lng)/(start_lat - end_lat);
-		double abs_k = abs(k);
+		double abs_k = fabs(k);
 
 		if(abs_k <= 1) {
 			direction = 3;

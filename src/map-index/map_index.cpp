@@ -56,18 +56,18 @@ MapIndex::MapIndex(string nodes_file, string edges_file, string geos_file, strin
 		this->loadGridData(grid_file);
 	} else {
 
-		this->errno = Error::ERR_PARA;
+		this->_errno = Error::ERR_PARA;
 		this->errMsg = "parameter error while init map index...";
 		return;
 	}
 
-	this->errno = Error::ERR_OK;
+	this->_errno = Error::ERR_OK;
 	logger->Info("Init MapIndex Over...");
 }
 
 int MapIndex::getErrno()
 {
-	return this->errno;
+	return this->_errno;
 }
 
 string MapIndex::getErrMsg()
@@ -333,7 +333,7 @@ void MapIndex::loadGridData(string grid_file)
 		EchoRunning();
 		grid_data = SplitBySep(buffer, "\t");
 		if(grid_data.size() < 6) {
-			debug_msg("grid data size error, %d.\n", grid_data.size());
+			debug_msg("grid data size error, %lu.\n", grid_data.size());
 			debug_msg("grid data size error, %s.\n", buffer);
 			continue;
 		}
