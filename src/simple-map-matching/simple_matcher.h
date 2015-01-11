@@ -158,9 +158,6 @@ class Matcher {
 		MapIndex					*map_index;
 
 		double calDistance(double lng1, double lat1, double lng2, double lat2);
-		double calHeading(double lng1, double lat1, double lng2, double lat2);
-		double headingResemblance(double seg_heading, double heading);
-		double distanceResemblance(double average_distance, double distance);
 };
 
 

@@ -218,6 +218,8 @@ vector<point> Matcher::doMatch(struct position position, struct map_track map_tr
 	double map_lng, map_lat;
 	struct point map_point;
 	struct seg_point_map seg_map;
+	struct seg_candidate candidate;
+	vector<seg_point_map> seg_maps;
 	vector<seg_candidate> candidates;
 	vector<point> map_points;
 
@@ -231,12 +233,51 @@ vector<point> Matcher::doMatch(struct position position, struct map_track map_tr
 	candidates.clear();
 	candidates = map_track.candidates;
 
+	//first time map point to road, map it to the latest road
+	if(0 == candidates.size())
+	{
+		double tmp = INFINITY;
+		seg_maps = this->map_index->getGridSegs(lng, lat, this->query_distance);
+		//update candidates
+		for(vector<seg_point_map>::iterator iter = seg_maps.begin(); iter != seg_maps.end(); iter++)
+		{
+			if(!iter->on_seg && iter->min_distance > this->query_distance)
+				continue;
+			seg_heading = this->calHeading(iter->start_lng, iter->start_lat, iter->end_lng, iter->end_lat);
+			candidate.seg = *iter;
+			candidate.seg_heading = seg_heading;
+			candidate.dis_deviation = 0;
+			candidate.heading_deviation = 0;
+			candidate.map_point_num = 0;
+			candidate.orientation = 0;
+			candidates.push_back(candidate);
+			if((iter->on_seg && iter->distance < tmp) || (!iter->on_seg && iter->min_distance < tmp))
+			{
+				map_lng = iter->map_lng;
+				map_lat = iter->map_lat;
+			}
+		}
+
+		if(candidates.size() == 0)
+			return map_points;
+
+		map_track.last_lng = lng;
+		map_track.last_lat = lat;
+		map_track.candidates = candidates;
+		map_point.map_lng = map_lng;
+		map_point.map_lat = map_lat;
+		map_points.push_back(map_point);
+
+		return map_points;
+	}
+
 	heading = this->calHeading(last_lng, last_lat, lng, lat);
 
-	//seg_maps = this->map_index->queryGrid(lng, lat, this->query_distance);
 	//update map_track candidates
 
 	//seg_maps = this->map_index->batchMapPoint2Seg();
+	//TODO: add successor road seg to candidate
+	//		clear out of date segs
 
 	for(vector<seg_candidate>::iterator iter = candidates.begin(); iter != candidates.end(); iter++) {
 
