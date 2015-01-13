@@ -14,7 +14,7 @@ MapIndex::MapIndex(string nodes_file, string edges_file, string geos_file, strin
 				string grid_info, string grid_file, string logfile)
 {
 	//FIXME:init init_mode value by config genSeg, genGrid, loadGrid.
-	string init_mode = "loadGrid";
+	string init_mode = "genGrid";
 
 	logger = new Logger(logfile);
 	logger->Info("Init MapIndex...");
@@ -36,7 +36,7 @@ MapIndex::MapIndex(string nodes_file, string edges_file, string geos_file, strin
 		this->preprocess_grid_info("round");
 		this->initGenGrid();
 		logger->Info("Gening grid...");
-		this->genGrid();
+		this->genGrid(segs_file);
 	} else if(init_mode == "genGrid" && segs_file != "") {
 
 		logger->Info("Loading segs...");
@@ -44,7 +44,9 @@ MapIndex::MapIndex(string nodes_file, string edges_file, string geos_file, strin
 		this->preprocess_grid_info("round");
 		this->initGenGrid();
 		logger->Info("Gening grid...");
-		this->genGrid();
+		this->genGrid(segs_file);
+		logger->Info("Dumping grid...");
+		this->dumpGrid("grid.txt");
 	} else if(init_mode == "loadGrid" && segs_file != "" && grid_info != "" && grid_file != "") {
 
 		logger->Info("Loading segs...");
@@ -78,7 +80,7 @@ string MapIndex::getErrMsg()
 void MapIndex::initMapIndex()
 {
 	//FIXME:use config file to decide which branch running to ...
-	if(0) {
+	if("loadGrid" != init_mode) {
 
 		start_lng = START_LNG;
 		start_lat = START_LAT;
@@ -333,7 +335,7 @@ void MapIndex::loadGridData(string grid_file)
 		EchoRunning();
 		grid_data = SplitBySep(buffer, "\t");
 		if(grid_data.size() < 6) {
-			debug_msg("grid data size error, %lu.\n", grid_data.size());
+			debug_msg("grid data size error, %u.\n", grid_data.size());
 			debug_msg("grid data size error, %s.\n", buffer);
 			continue;
 		}

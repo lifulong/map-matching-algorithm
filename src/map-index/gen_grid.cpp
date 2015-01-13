@@ -98,7 +98,7 @@ void MapIndex::dumpGrid(string dump_file="")
 		fp = stdout;
 	else
 	{
-		fp = fopen(dump_file.c_str(), "a+");
+		fp = fopen(dump_file.c_str(), "w+");
 	}
 
 	debug_msg("Start dumpGrid ... ...\n");
@@ -156,7 +156,7 @@ void MapIndex::initGenGrid()
 }
 
 struct grid_index MapIndex::getGridIndexByPoint(double lng, double lat)
-{	
+{
 	int i=0, j=0;
 
 	struct grid_index index;

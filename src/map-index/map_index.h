@@ -122,6 +122,7 @@ class MapIndex {
 		static constexpr double DEF_PI180 = 0.01745329252; // PI/180.0
 		static constexpr double DEF_R = 6370693.5; // radius of earth
 
+		string init_mode;
 		double start_lng, end_lng, start_lat, end_lat;
 		double lat_gap, lng_gap;
 		int lat_num, lng_num;
