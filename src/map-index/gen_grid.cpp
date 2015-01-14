@@ -38,21 +38,21 @@ double MapIndex::round(double val, double mod, char type)
 	return val;
 }
 
-void MapIndex::preprocess_grid_info(string type)
+void MapIndex::preprocessGridInfo(string type)
 {
 	if(0 == strcmp(type.c_str(), "round"))
 	{
-		debug_msg("%f\t%f\t%f\t%f\n", start_lat, end_lat, start_lng, end_lng);
-		start_lat = this->round(start_lat, lat_gap, 1);
-		end_lat = this->round(end_lat, lat_gap, 0);
-		start_lng = this->round(start_lng, lng_gap, 1);
-		end_lng = this->round(end_lng, lng_gap, 0);
+		debug_msg("%f\t%f\t%f\t%f\n", map_start_lat, map_end_lat, map_start_lng, map_end_lng);
+		map_start_lat = this->round(map_start_lat, map_lat_gap, 1);
+		map_end_lat = this->round(map_end_lat, map_lat_gap, 0);
+		map_start_lng = this->round(map_start_lng, map_lng_gap, 1);
+		map_end_lng = this->round(map_end_lng, map_lng_gap, 0);
 	}
 
-	debug_msg("%f\t%f\t%f\t%f\t%f\t%f\n", start_lat, end_lat, start_lng, end_lng, lat_gap, lng_gap);
-	lat_num = fabs(end_lat - start_lat) / lat_gap + 1;
-	lng_num = fabs(end_lng - start_lng) / lng_gap + 1;
-	debug_msg("lat_num:%d\tlng_num:%d\n", lat_num, lng_num);
+	debug_msg("%f\t%f\t%f\t%f\t%f\t%f\n", map_start_lat, map_end_lat, map_start_lng, map_end_lng, map_lat_gap, map_lng_gap);
+	map_lat_num = fabs(map_end_lat - map_start_lat) / map_lat_gap + 1;
+	map_lng_num = fabs(map_end_lng - map_start_lng) / map_lng_gap + 1;
+	debug_msg("lat_num:%d\tlng_num:%d\n", map_lat_num, map_lng_num);
 }
 
 
@@ -98,14 +98,14 @@ void MapIndex::dumpGrid(string dump_file="")
 		fp = stdout;
 	else
 	{
-		fp = fopen(dump_file.c_str(), "w+");
+		fp = fopen(dump_file.c_str(), "w");
 	}
 
 	debug_msg("Start dumpGrid ... ...\n");
 
-	for(i = 0; i < lng_num; i++)
+	for(i = 0; i < map_lng_num; i++)
 	{
-		for(j = 0; j < lat_num; j++)
+		for(j = 0; j < map_lat_num; j++)
 		{
 			//format:i j start_lng start_lat end_lng end_lat seg_id1 ... seg_idn
 			fprintf(fp, "%d\t%d\t%f\t%f\t%f\t%f", i, j, grid[i][j].start_lng, grid[i][j].start_lat,
@@ -134,23 +134,22 @@ void MapIndex::initGenGrid()
 {
 	int i, j;
 
-	//grid = new grid_node[lng_num][lat_num];	//invalid, second dim should be const
-	grid = new grid_node*[lng_num];
-	for(i = 0; i < lng_num; i++)
+	grid = new grid_node*[map_lng_num];
+	for(i = 0; i < map_lng_num; i++)
 	{
-		grid[i] = new grid_node[lat_num];
+		grid[i] = new grid_node[map_lat_num];
 	}
 
 	/**
 	 * first dimension is horizontal, lng
 	 * second dimension is vertical, lat
 	 */
-	for(i = 0; i < lng_num; i++)
-		for(j = 0; j < lat_num; j++) {
-			grid[i][j].start_lng = this->start_lng + i*this->lng_gap;
-			grid[i][j].end_lng = grid[i][j].start_lng + this->lng_gap;
-			grid[i][j].start_lat = this->start_lat + j*this->lat_gap;
-			grid[i][j].end_lat = grid[i][j].start_lat + this->lat_gap;
+	for(i = 0; i < map_lng_num; i++)
+		for(j = 0; j < map_lat_num; j++) {
+			grid[i][j].start_lng = this->map_start_lng + i*this->map_lng_gap;
+			grid[i][j].end_lng = grid[i][j].start_lng + this->map_lng_gap;
+			grid[i][j].start_lat = this->map_start_lat + j*this->map_lat_gap;
+			grid[i][j].end_lat = grid[i][j].start_lat + this->map_lat_gap;
 			grid[i][j].node_segs.clear();
 		}
 }
@@ -159,14 +158,17 @@ struct grid_index MapIndex::getGridIndexByPoint(double lng, double lat)
 {
 	int i=0, j=0;
 
-	struct grid_index index;
+	struct grid_index index = {-1, -1};
+
+	if(lng < this->map_start_lng || lng > this->map_end_lng || lat < this->map_start_lat || lat > this->map_end_lat)
+		return index;
 
 	//i = (lng - this->start_lng) / this->lng_gap + 1;
 	//j = (lat - this->start_lat) / this->lat_gap + 1;
-	i = (lng - this->start_lng) / this->lng_gap;
-	j = (lat - this->start_lat) / this->lat_gap;
+	i = (lng - this->map_start_lng) / this->map_lng_gap;
+	j = (lat - this->map_start_lat) / this->map_lat_gap;
 
-	if(i >= this-> lng_num || j >= this->lat_num)
+	if(i >= this->map_lng_num || j >= this->map_lat_num)
 	{
 		debug_msg("getGridIndexByPoint: i = %d j = %d.\n", i, j);
 		i = -1;
@@ -175,8 +177,8 @@ struct grid_index MapIndex::getGridIndexByPoint(double lng, double lat)
 
 	if(i < 0 || j < 0) {
 		debug_msg("getGridIndexByPoint lng: %f,lat: %f.\n", lng, lat);
-		debug_msg("getGridIndexByPoint start_lng: %f,start_lat: %f.\n", this->start_lng, this->start_lat);
-		debug_msg("getGridIndexByPoint: lng_num = %d, lat_num = %d.\n", lng_num, lat_num);
+		debug_msg("getGridIndexByPoint start_lng: %f,start_lat: %f.\n", this->map_start_lng, this->map_start_lat);
+		debug_msg("getGridIndexByPoint: lng_num = %d, lat_num = %d.\n", map_lng_num, map_lat_num);
 		debug_msg("getGridIndexByPoint: i = %d j = %d.\n", i, j);
 	}
 
@@ -189,9 +191,9 @@ struct grid_index MapIndex::getGridIndexByPoint(double lng, double lat)
 
 void MapIndex::updateGrid(struct grid_index index, struct seg seg)
 {
-	if(index.i < 0 || index.i > lng_num || index.j < 0 || index.j > lat_num)
+	if(index.i < 0 || index.i > map_lng_num || index.j < 0 || index.j > map_lat_num)
 	{
-		cout << "index valid: i = " << index.i << " j = " << index.j << endl;
+		cout << "updateGrid:index valid: i = " << index.i << " j = " << index.j << endl;
 		return;
 	}
 	this->grid[index.i][index.j].node_segs.push_back(seg);
@@ -212,7 +214,7 @@ void MapIndex::updateHorizontalGrids(double k, double start_lng, double start_la
 		index = this->getGridIndexByPoint(curr_lng, curr_lat);
 		last_index = index;
 		this->updateGrid(index, seg);
-		curr_lng = curr_lng + lng_gap;
+		curr_lng = curr_lng + map_lng_gap;
 	}
 
 	if(curr_lng > end_lng)
@@ -239,7 +241,7 @@ void MapIndex::updateVerticalGrids(double k, double start_lng, double start_lat,
 		index = this->getGridIndexByPoint(curr_lng, curr_lat);
 		last_index = index;
 		this->updateGrid(index, seg);
-		curr_lat = curr_lat + lat_gap;
+		curr_lat = curr_lat + map_lat_gap;
 	}
 
 	if(curr_lat > end_lat)
@@ -265,7 +267,7 @@ void MapIndex::updateHorizOrientGrids(double k, double start_lng, double start_l
 		index = this->getGridIndexByPoint(curr_lng, curr_lat);
 		last_index = index;
 		this->updateGrid(index, seg);
-		curr_lng = curr_lng + lng_gap;
+		curr_lng = curr_lng + map_lng_gap;
 		curr_lat = k * (curr_lng - start_lng) + start_lat;
 	}
 
@@ -293,7 +295,7 @@ void MapIndex::updateVertOrientGrids(double k, double start_lng, double start_la
 		index = this->getGridIndexByPoint(curr_lng, curr_lat);
 		last_index = index;
 		this->updateGrid(index, seg);
-		curr_lat = curr_lat + lat_gap;
+		curr_lat = curr_lat + map_lat_gap;
 		curr_lng = (curr_lat - start_lat) / k + start_lng;
 	}
 
@@ -309,7 +311,7 @@ void MapIndex::updateVertOrientGrids(double k, double start_lng, double start_la
 
 void MapIndex::updateGrids(struct seg seg)
 {
-	double k = 0;
+	double k = 0, abs_k = 0;
 	double left_lat=0, left_lng=0, right_lat=0, right_lng=0;
 	double buttom_lat=0, buttom_lng=0, top_lat=0, top_lng=0;
 	// 1:horizontal		2:vertical		3:horiz_orientation	4:vertical_orientation
@@ -325,8 +327,8 @@ void MapIndex::updateGrids(struct seg seg)
 		direction = 2;
 	} else {
 
-		double k = (start_lng - end_lng)/(start_lat - end_lat);
-		double abs_k = fabs(k);
+		k = (seg.start_lng - seg.end_lng)/(seg.start_lat - seg.end_lat);
+		abs_k = fabs(k);
 
 		if(abs_k <= 1) {
 			direction = 3;
@@ -373,16 +375,16 @@ void MapIndex::updateGrids(struct seg seg)
 		case 0:
 			break;
 		case 1:
-			updateHorizontalGrids(k, left_lng, left_lat, right_lng, right_lat, seg);
+			updateHorizontalGrids(abs_k, left_lng, left_lat, right_lng, right_lat, seg);
 			break;
 		case 2:
-			updateVerticalGrids(k, buttom_lng, buttom_lat, top_lng, top_lat, seg);
+			updateVerticalGrids(abs_k, buttom_lng, buttom_lat, top_lng, top_lat, seg);
 			break;
 		case 3:
-			updateHorizOrientGrids(k, left_lng, left_lat, right_lng, right_lat, seg);
+			updateHorizOrientGrids(abs_k, left_lng, left_lat, right_lng, right_lat, seg);
 			break;
 		case 4:
-			updateVertOrientGrids(k, buttom_lng, buttom_lat, top_lng, top_lat, seg);
+			updateVertOrientGrids(abs_k, buttom_lng, buttom_lat, top_lng, top_lat, seg);
 			break;
 		default:
 			break;

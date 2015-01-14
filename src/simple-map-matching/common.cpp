@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <limits>
 
 using namespace std;
 
@@ -92,9 +93,11 @@ double String2Double(string str)
 
 string Double2String(double val)
 {
+	//int prec = numeric_limits<float>::digits10;
 	stringstream ss;
 	string str;
 
+	ss.precision(10);
 	ss << val;
 	str = ss.str();
 

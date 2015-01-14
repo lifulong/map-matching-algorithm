@@ -14,7 +14,7 @@ MapIndex::MapIndex(string nodes_file, string edges_file, string geos_file, strin
 				string grid_info, string grid_file, string logfile)
 {
 	//FIXME:init init_mode value by config genSeg, genGrid, loadGrid.
-	string init_mode = "genGrid";
+	string init_mode = "loadGrid";
 
 	logger = new Logger(logfile);
 	logger->Info("Init MapIndex...");
@@ -33,7 +33,7 @@ MapIndex::MapIndex(string nodes_file, string edges_file, string geos_file, strin
 		this->loadGeos(geos_file);
 		logger->Info("Gening segs...");
 		this->genSegs();
-		this->preprocess_grid_info("round");
+		this->preprocessGridInfo("round");
 		this->initGenGrid();
 		logger->Info("Gening grid...");
 		this->genGrid(segs_file);
@@ -41,7 +41,7 @@ MapIndex::MapIndex(string nodes_file, string edges_file, string geos_file, strin
 
 		logger->Info("Loading segs...");
 		this->loadSegs(segs_file);
-		this->preprocess_grid_info("round");
+		this->preprocessGridInfo("round");
 		this->initGenGrid();
 		logger->Info("Gening grid...");
 		this->genGrid(segs_file);
@@ -82,27 +82,28 @@ void MapIndex::initMapIndex()
 	//FIXME:use config file to decide which branch running to ...
 	if("loadGrid" != init_mode) {
 
-		start_lng = START_LNG;
-		start_lat = START_LAT;
-		end_lng = END_LNG;
-		end_lat = END_LAT;
-		lng_gap = LNG_GAP;
-		lat_gap = LAT_GAP;
-		lat_num = lng_num = 0;
+		map_start_lng = START_LNG;
+		map_start_lat = START_LAT;
+		map_end_lng = END_LNG;
+		map_end_lat = END_LAT;
+		map_lng_gap = LNG_GAP;
+		map_lat_gap = LAT_GAP;
+		map_lat_num = map_lng_num = 0;
 	} else {
 
-		start_lng = 0;
-		start_lat = 0;
-		end_lng = 0;
-		end_lat = 0;
-		lng_gap = 0;
-		lat_gap = 0;
-		lat_num = lng_num = 0;
+		map_start_lng = 0;
+		map_start_lat = 0;
+		map_end_lng = 0;
+		map_end_lat = 0;
+		map_lng_gap = 0;
+		map_lat_gap = 0;
+		map_lat_num = map_lng_num = 0;
 	}
 
 	this->inodes.clear();
 	this->iedges.clear();
 	this->igeos.clear();
+	this->segs.clear();
 }
 
 void MapIndex::loadNodes(string node_file)
@@ -228,6 +229,7 @@ void MapIndex::loadSegs(string segs_file)
 	debug_msg("[INFO]loading segs... ...\n");
 	infile.open(segs_file.c_str(), ifstream::in);
 
+	this->segs.clear();
 	this->segs.push_back(seg);	//FIXME:First seg is padding, invalid.
 
 	while(!infile.getline(buffer, LINE_BUFFER_LEN).eof())
@@ -252,22 +254,22 @@ void MapIndex::setValue(string key, string value)
 {
 	if(0 == strcmp(key.c_str(), "start_lng")) {
 
-		this->start_lng = atof(value.c_str());
+		this->map_start_lng = atof(value.c_str());
 	} else if (0 == strcmp(key.c_str(), "start_lat")) {
 
-		this->start_lat = atof(value.c_str());
+		this->map_start_lat = atof(value.c_str());
 	} else if (0 == strcmp(key.c_str(), "end_lng")) {
 
-		this->end_lng = atof(value.c_str());
+		this->map_end_lng = atof(value.c_str());
 	} else if (0 == strcmp(key.c_str(), "end_lat")) {
 
-		this->end_lat = atof(value.c_str());
+		this->map_end_lat = atof(value.c_str());
 	} else if (0 == strcmp(key.c_str(), "lng_gap")) {
 
-		this->lng_gap = atof(value.c_str());
+		this->map_lng_gap = atof(value.c_str());
 	} else if (0 == strcmp(key.c_str(), "lat_gap")) {
 
-		this->lat_gap = atof(value.c_str());
+		this->map_lat_gap = atof(value.c_str());
 	} else {
 
 		debug_msg("unkown key value detect: key=%s, value=%s.\n", key.c_str(), value.c_str());
@@ -299,19 +301,19 @@ void MapIndex::loadGridInfo(string grid_info)
 	fclose(fp);
 
 	//FIXME: start_lng end_lng ... check
-	this->lng_num = fabs(start_lng - end_lng) / lng_gap + 1;
-	this->lat_num = fabs(start_lat - end_lat) / lat_gap + 1;
+	this->map_lng_num = fabs(map_start_lng - map_end_lng) / map_lng_gap + 1;
+	this->map_lat_num = fabs(map_start_lat - map_end_lat) / map_lat_gap + 1;
 }
 
 void MapIndex::dumpGridInfo()
 {
 	cout << "dumpGridInfo:" << endl;
-	cout << "start_lng:" << start_lng << endl;
-	cout << "start_lat:" << start_lat << endl;
-	cout << "end_lng:" << end_lng << endl;
-	cout << "end_lat:" << end_lat << endl;
-	cout << "lng_gap:" << lng_gap << endl;
-	cout << "lat_gap:" << lat_gap << endl;
+	cout << "start_lng:" << map_start_lng << endl;
+	cout << "start_lat:" << map_start_lat << endl;
+	cout << "end_lng:" << map_end_lng << endl;
+	cout << "end_lat:" << map_end_lat << endl;
+	cout << "lng_gap:" << map_lng_gap << endl;
+	cout << "lat_gap:" << map_lat_gap << endl;
 	cout << endl;
 }
 
@@ -346,12 +348,12 @@ void MapIndex::loadGridData(string grid_file)
 		end_lng = atof(grid_data[4].c_str());
 		end_lat = atof(grid_data[5].c_str());
 		
-		if(i < 0 || i > this->lng_num) {
+		if(i < 0 || i > this->map_lng_num) {
 			debug_msg("grid lng index error, %d.\n", i);
 			continue;
 		}
 
-		if(j < 0 || j > this->lat_num) {
+		if(j < 0 || j > this->map_lat_num) {
 			debug_msg("grid lat index error, %d.\n", j);
 			continue;
 		}
@@ -385,14 +387,14 @@ void MapIndex::initGrid()
 {
 	int i, j;
 
-	grid = new grid_node*[lng_num];
-	for(i = 0; i < lng_num; i++)
+	grid = new grid_node*[map_lng_num];
+	for(i = 0; i < map_lng_num; i++)
 	{
-		grid[i] = new grid_node[lat_num];
+		grid[i] = new grid_node[map_lat_num];
 	}
-	for(i = 0; i < lng_num; i++)
+	for(i = 0; i < map_lng_num; i++)
 	{
-		for(j = 0; j < lat_num; j++)
+		for(j = 0; j < map_lat_num; j++)
 		{
 			grid[i][j].node_segs.clear();
 		}

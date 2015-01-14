@@ -40,7 +40,6 @@ struct map_track {
 };
 */
 
-
 /*
 uint32_t					current_id;
 uint32_t					max_id;		//assign it with (uint32_t)-1
@@ -57,10 +56,11 @@ int Matcher::initMatcher()
 {
 	this->max_id = (uint32_t)-1;
 	this->current_id = 0;
+	this->query_distance = 100;
+	this->map_index = new MapIndex("", "", "", "segs.txt", "grid_info", "grid.txt");
 
 	return 0;
 }
-
 
 uint32_t Matcher::genUniqId()
 {
@@ -101,14 +101,12 @@ double Matcher::calDistance(double lng1, double lat1, double lng2, double lat2)
 
 vector<point> Matcher::doMatch(struct position position, struct map_track map_track)
 {
-	double last_lng, last_lat, lng, lat;
+	double lng, lat;
 	double map_lng, map_lat;
 	struct point map_point;
 	vector<seg_point_map> seg_maps;
 	vector<point> map_points;
 
-	last_lng = map_track.last_lng;
-	last_lat = map_track.last_lat;
 	lng = position.lng;
 	lat = position.lat;
 	map_lng = map_lat = 0.0;
@@ -126,11 +124,17 @@ vector<point> Matcher::doMatch(struct position position, struct map_track map_tr
 		{
 			map_lng = iter->map_lng;
 			map_lat = iter->map_lat;
+			if(iter->on_seg)
+				tmp = iter->distance;
+			else
+				tmp = iter->min_distance;
 		}
 	}
 
 	if(map_lng == 0 && map_lat == 0)
 		return map_points;
+
+	debug_msg("lng:%f\tlat:%f\tmap_lng:%f\tmap_lat:%f\tdistance:%f\n", lng, lat, map_lng, map_lat, tmp);
 
 	map_point.lng = map_lng;
 	map_point.lat = map_lat;

@@ -10,7 +10,7 @@
 #define READ_BUFFER_LEN		40960
 
 
-double MapIndex::cal_line_distance(double start_lng, double start_lat, double end_lng, double end_lat)
+double MapIndex::calLineDistance(double start_lng, double start_lat, double end_lng, double end_lat)
 {
 	double distance, sq_distance;
 
@@ -20,7 +20,7 @@ double MapIndex::cal_line_distance(double start_lng, double start_lat, double en
 	return distance;
 }
 
-double MapIndex::cal_short_distance(double lon1, double lat1, double lon2, double lat2)
+double MapIndex::calShortDistance(double lon1, double lat1, double lon2, double lat2)
 {
 		double ew1, ns1, ew2, ns2;
 		double dx, dy, dew;
@@ -44,7 +44,7 @@ double MapIndex::cal_short_distance(double lon1, double lat1, double lon2, doubl
 		return distance;
 }
 
-double MapIndex::cal_long_distance(double lon1, double lat1, double lon2, double lat2)
+double MapIndex::calLongDistance(double lon1, double lat1, double lon2, double lat2)
 {
 		double ew1, ns1, ew2, ns2;
 		double distance;
@@ -65,9 +65,9 @@ double MapIndex::cal_long_distance(double lon1, double lat1, double lon2, double
 		return distance;
 }
 
-bool MapIndex::on_seg(double lng, double lat, double start_lng, double start_lat, double end_lng, double end_lat)
+bool MapIndex::onSeg(double lng, double lat, double start_lng, double start_lat, double end_lng, double end_lat)
 {
-	if(((start_lng - lng) * (lng - end_lng)) >= 0)
+	if(((start_lng - lng)*(end_lng - lng) <= 0) && ((start_lat - lat)*(end_lat - lat) <= 0))
 		return true;
 	return false;
 }
@@ -108,8 +108,8 @@ seg_point_map MapIndex::mapGridSeg(double lng, double lat, seg seg)
 	end_lat = seg.end_lat;
 
 	//FIXME:point is start_point or end_point
-	es_distance = this->cal_line_distance(start_lng, start_lat, end_lng, end_lat);
-	ps_distance = this->cal_line_distance(start_lng, start_lat, lng, lat);
+	es_distance = this->calLineDistance(start_lng, start_lat, end_lng, end_lat);
+	ps_distance = this->calLineDistance(start_lng, start_lat, lng, lat);
 	if(ps_distance == 0)
 		cos_theta = 1;
 	else
@@ -120,11 +120,11 @@ seg_point_map MapIndex::mapGridSeg(double lng, double lat, seg seg)
 	map_lng = (ms_distance*(end_lng - start_lng)*sign_flag + es_distance*start_lng)/es_distance;
 	map_lat = (ms_distance*(end_lat - start_lat)*sign_flag + es_distance*start_lat)/es_distance;
 
-	ps_short_distance = this->cal_short_distance(start_lng, start_lat, lng, lat);
-	pe_short_distance = this->cal_short_distance(end_lng, end_lat, lng, lat);
-	short_distance =  this->cal_short_distance(map_lng, map_lat, lng, lat);
+	ps_short_distance = this->calShortDistance(start_lng, start_lat, lng, lat);
+	pe_short_distance = this->calShortDistance(end_lng, end_lat, lng, lat);
+	short_distance =  this->calShortDistance(map_lng, map_lat, lng, lat);
 	min_short_distance = ps_short_distance > pe_short_distance ? pe_short_distance : ps_short_distance;
-	on_seg = this->on_seg(map_lng, map_lat, start_lng, start_lat, end_lng, end_lat);
+	on_seg = this->onSeg(map_lng, map_lat, start_lng, start_lat, end_lng, end_lat);
 
 	map.seg_id = seg.seg_id;
 	map.edge_id = seg.edge_id;
@@ -156,7 +156,7 @@ vector<struct seg_point_map> MapIndex::mapGridSegs(double lng, double lat, doubl
 		map = this->mapGridSeg(lng, lat, *iter);
 		if(0 != distance) {
 
-			if((map.on_seg = true && map.distance < distance) || (map.on_seg = false && map.min_distance < distance))
+			if((map.on_seg == true && map.distance < distance) || (map.on_seg == false && map.min_distance < distance))
 				seg_point_maps.push_back(map);
 		} else {
 
@@ -192,11 +192,11 @@ vector<struct seg_point_map> MapIndex::getGridSegs(double lng, double lat, doubl
 			tmp_i = index_i + i;
 			tmp_j = index_j + j;
 
-			if(tmp_i < 0 || tmp_i > this->lng_num) {
+			if(tmp_i < 0 || tmp_i >= this->map_lng_num) {
 				continue;
 			}
 
-			if(tmp_j < 0 || tmp_j > this->lat_num) {
+			if(tmp_j < 0 || tmp_j >= this->map_lat_num) {
 				continue;
 			}
 

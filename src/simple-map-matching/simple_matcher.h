@@ -18,6 +18,8 @@
 
 using namespace std;
 
+#include <stdio.h>
+
 #include "../map-index/map_index.h"
 
 

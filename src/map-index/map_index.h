@@ -25,8 +25,8 @@ using namespace std;
 #define BJ_END_LNG		117.4
 #define BJ_END_LAT		41.1
 
-#define LNG_GAP		0.005
-#define LAT_GAP		0.005
+#define LNG_GAP		0.002
+#define LAT_GAP		0.002
 
 #define START_LNG	BJ_START_LNG
 #define START_LAT	BJ_START_LAT
@@ -123,9 +123,9 @@ class MapIndex {
 		static constexpr double DEF_R = 6370693.5; // radius of earth
 
 		string init_mode;
-		double start_lng, end_lng, start_lat, end_lat;
-		double lat_gap, lng_gap;
-		int lat_num, lng_num;
+		double map_start_lng, map_end_lng, map_start_lat, map_end_lat;
+		double map_lat_gap, map_lng_gap;
+		int map_lat_num, map_lng_num;
 		//int grid_lat_len, grid_lng_len;
 		int _errno;
 		string errMsg;
@@ -157,7 +157,7 @@ class MapIndex {
 
 		//gen grid
 		double round(double val, double mod, char type);
-		void preprocess_grid_info(string type);
+		void preprocessGridInfo(string type);
 
 		void initGenGrid();
 		struct grid_index getGridIndexByPoint(double lng, double lat);
@@ -175,9 +175,9 @@ class MapIndex {
 		void dumpGrid(string dump_file);
 
 		//query grid
-		double cal_line_distance(double start_lng, double start_lat, double end_lng, double end_lat);
-		double cal_short_distance(double lon1, double lat1, double lon2, double lat2);
-		double cal_long_distance(double lon1, double lat1, double lon2, double lat2);
-		bool on_seg(double lng, double lat, double start_lng, double start_lat, double end_lng, double end_lat);
+		double calLineDistance(double start_lng, double start_lat, double end_lng, double end_lat);
+		double calShortDistance(double lon1, double lat1, double lon2, double lat2);
+		double calLongDistance(double lon1, double lat1, double lon2, double lat2);
+		bool onSeg(double lng, double lat, double start_lng, double start_lat, double end_lng, double end_lat);
 };
 
