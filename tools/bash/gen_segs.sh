@@ -39,6 +39,9 @@ function gen_segs()
 			$line
 		EOF
 
+		#Fix:set lat and lng to "" while read an new line
+		lat=""
+		lng=""
 		last_lat=""
 		last_lng=""
 
