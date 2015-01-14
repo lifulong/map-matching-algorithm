@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
+#include <string.h>
 
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <limits>
 
 using namespace std;
 
@@ -93,13 +93,21 @@ double String2Double(string str)
 
 string Double2String(double val)
 {
-	//int prec = numeric_limits<float>::digits10;
+	/*
 	stringstream ss;
 	string str;
 
 	ss.precision(10);
 	ss << val;
 	str = ss.str();
+	*/
+
+	string str;
+#define DOUBLE_BUF_LEN		64
+	char buffer[DOUBLE_BUF_LEN];
+	memset(buffer, 0, DOUBLE_BUF_LEN);
+	sprintf(buffer, "%f", val);
+	str = string(buffer);
 
 	return str;
 }

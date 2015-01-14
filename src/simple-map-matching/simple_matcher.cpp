@@ -118,6 +118,8 @@ vector<point> Matcher::doMatch(struct position position, struct map_track map_tr
 	//update candidates
 	for(vector<seg_point_map>::iterator iter = seg_maps.begin(); iter != seg_maps.end(); iter++)
 	{
+		if(!iter->on_seg)
+			continue;
 		if(!iter->on_seg && iter->min_distance > this->query_distance)
 			continue;
 		if((iter->on_seg && iter->distance < tmp) || (!iter->on_seg && iter->min_distance < tmp))

@@ -17,6 +17,48 @@ using namespace std;
 
 #include <stdio.h>
 
+void dumpMapPoints(vector<seg_point_map> maps, string dumpfile)
+{
+	FILE *fp;
+
+	if("" == dumpfile)
+		return;
+
+	if((fp = fopen(dumpfile.c_str(), "w")) == NULL)
+	{
+		debug_msg("dumpMapPoints:open %s error.\n", dumpfile.c_str());
+		return;
+	}
+
+	for(vector<seg_point_map>::iterator iter = maps.begin(); iter != maps.end(); iter++)
+	{
+		fprintf(fp, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", iter->start_lng, iter->start_lat, iter->end_lng, iter->end_lat, iter->lng, iter->lat, iter->map_lng, iter->map_lat);
+	}
+
+	fclose(fp);
+}
+
+void dumpMapSegs(vector<seg_point_map> maps, string dumpfile)
+{
+	FILE *fp;
+
+	if("" == dumpfile)
+		return;
+
+	if((fp = fopen(dumpfile.c_str(), "w")) == NULL)
+	{
+		debug_msg("dumpMapPoints:open %s error.\n", dumpfile.c_str());
+		return;
+	}
+
+	for(vector<seg_point_map>::iterator iter = maps.begin(); iter != maps.end(); iter++)
+	{
+		fprintf(fp, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\n", iter->seg_id, iter->start_lng, iter->start_lat, iter->end_lng, iter->end_lat, iter->lng, iter->lat, iter->map_lng, iter->map_lat, iter->on_seg, iter->distance, iter->min_distance);
+	}
+
+	fclose(fp);
+}
+
 void test()
 {
 	vector<seg_point_map> maps;
@@ -24,7 +66,7 @@ void test()
 
 	MapIndex *map_index = new MapIndex("", "", "", "segs.txt", "grid_info", "grid.txt");
 	printf("begin query grid segs......\n");
-	maps = map_index->getGridSegs(115.714691, 39.570098, 100);
+	maps = map_index->getGridSegs(116.578234, 39.929855, 100);
 
 	printf("maps_size: %u\n", maps.size());
 	for(vector<seg_point_map>::iterator iter = maps.begin(); iter != maps.end(); iter++)
@@ -45,6 +87,9 @@ void test()
 		printf("on_seg:\t%d\n", iter->on_seg);
 		printf("\n");
 	}
+
+	dumpMapSegs(maps, "dump_map_segs.txt");
+	dumpMapPoints(maps, "dump_map_points.txt");
 }
 
 int main()
