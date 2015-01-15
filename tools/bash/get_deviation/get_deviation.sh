@@ -62,11 +62,7 @@ function get_deviation()
 			[ $pos -eq 1 ] && { average_lng="0"$average_lng; }
 			pos=`expr index $average_lat .`
 			[ $pos -eq 1 ] && { average_lat="0"$average_lat; }
-			if [ -f $result_file ];then
-				rm $result_file
-			fi
-			echo "$average_lng" | tee -a $result_file
-			echo "$average_lat" | tee -a $result_file
+			echo -e "$average_lng\t$average_lat" | tee $result_file
 			return
 		fi
 
@@ -84,6 +80,8 @@ function get_deviation()
 		dev_lat=`scale=6;echo $real_lat-$fake_lat | bc`
 		total_lng=`scale=6;echo $total_lng+$dev_lng | bc`
 		total_lat=`scale=6;echo $total_lat+$dev_lat | bc`
+		DEBUG echo "total_lng:$total_lng"
+		DEBUG echo "total_lat:$total_lat"
 
 		let i=$i+1
 	done
